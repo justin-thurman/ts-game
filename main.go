@@ -1,7 +1,11 @@
 package main
 
-import "ts-game/engine"
+import (
+	"os"
+	"ts-game/engine"
+)
 
 func main() {
 	engine.Hello()
+	engine.Run(os.Stdin, os.Stdout)
 }
