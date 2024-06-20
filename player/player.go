@@ -5,6 +5,8 @@ import (
 	"io"
 )
 
+const PROMPT string = ">>>"
+
 type Player struct {
 	io.Reader
 	io.Writer
@@ -18,10 +20,16 @@ func New(name string, r io.Reader, w io.Writer, exitCallback func()) *Player {
 
 func (p *Player) Quit() {
 	p.save()
-	fmt.Fprintf(p, "Goodbye, %s!\n", p.Name)
+	p.Send("Goodbye, %s!\n", p.Name)
 	p.exitCallback()
 }
 
 func (p *Player) save() {
-	fmt.Fprintln(p, "If we had persistence, we'd be saving your character now.")
+	p.Send("If we had persistence, we'd be saving your character now.")
+}
+
+func (p *Player) Send(msg string, a ...any) {
+	fmt.Fprintf(p, msg, a...)
+	fmt.Fprintln(p, "")
+	fmt.Fprint(p, PROMPT)
 }

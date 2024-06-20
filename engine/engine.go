@@ -34,7 +34,7 @@ func (s *server) Connect(r io.Reader, w io.Writer, exitCallback func()) {
 	s.players = append(s.players, player)
 	s.playerLock.Unlock()
 	log.Info("User connected", "user", player.Name, "clientCount", len(s.players))
-	fmt.Fprintf(w, "Welcome to my very professional game, %s!\n", player.Name)
+	player.Send("Welcome to my very professional game, %s!\n", player.Name)
 	go s.listenForCommands(player)
 }
 
@@ -63,9 +63,9 @@ mainLoop:
 			log.Info("User exit", "user", p.Name, "clientCount", len(s.players))
 			break mainLoop
 		case strings.HasPrefix("gossip", cmd):
-			fmt.Fprintf(p, "You gossiped: %s\n", cmdArgs)
+			p.Send("You gossiped: %s\n", cmdArgs)
 		default:
-			fmt.Fprintf(p, "Unknown command: %s\n", cmd)
+			p.Send("Unknown command: %s\n", cmd)
 		}
 	}
 	err := scanner.Err()
