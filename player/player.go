@@ -15,7 +15,8 @@ func randRange(min, max int) int {
 const PROMPT string = ">>> "
 
 type Player struct {
-	fighting *mob.Mob
+	fighting   *mob.Mob
+	killedMobs chan *mob.Mob
 	io.Reader
 	io.Writer
 	exitCallback func()
@@ -26,8 +27,8 @@ type Player struct {
 	maxHealth    int
 }
 
-func New(name string, r io.Reader, w io.Writer, exitCallback func()) *Player {
-	return &Player{Name: name, Reader: r, Writer: w, exitCallback: exitCallback, minDamage: 1, maxDamage: 8, currHealth: 30, maxHealth: 30}
+func New(name string, r io.Reader, w io.Writer, exitCallback func(), killedMobs chan *mob.Mob) *Player {
+	return &Player{Name: name, Reader: r, Writer: w, exitCallback: exitCallback, minDamage: 1, maxDamage: 8, currHealth: 30, maxHealth: 30, killedMobs: killedMobs}
 }
 
 func (p *Player) Quit() {
@@ -61,6 +62,7 @@ func (p *Player) Tick() {
 		if p.fighting.Dead {
 			// TODO: Handle mob death
 			p.Send("You killed %s!", p.fighting.Name)
+			p.killedMobs <- p.fighting
 			p.fighting = nil
 		} else {
 			mobDamage := p.fighting.GetDamage()

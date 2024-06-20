@@ -15,13 +15,15 @@ import (
 
 type server struct {
 	players    []*playerModule.Player
+	killedMobs chan *mob.Mob
 	mobs       []*mob.Mob
 	playerLock sync.RWMutex
+	mobsLock   sync.RWMutex
 }
 
 func New() *server {
 	starterMob := mob.New("ant")
-	return &server{mobs: []*mob.Mob{starterMob}}
+	return &server{mobs: []*mob.Mob{starterMob}, killedMobs: make(chan *mob.Mob, 100)}
 }
 
 func (s *server) Connect(r io.Reader, w io.Writer, exitCallback func()) {
@@ -30,7 +32,7 @@ func (s *server) Connect(r io.Reader, w io.Writer, exitCallback func()) {
 	var player *playerModule.Player
 	for scanner.Scan() {
 		name := scanner.Text()
-		player = playerModule.New(name, r, w, exitCallback)
+		player = playerModule.New(name, r, w, exitCallback, s.killedMobs)
 		break
 	}
 	s.playerLock.Lock()
@@ -42,6 +44,7 @@ func (s *server) Connect(r io.Reader, w io.Writer, exitCallback func()) {
 }
 
 func (s *server) Start() error {
+	go s.listenForKilledMobs()
 	round := 1
 	for {
 		for _, p := range s.players {
@@ -103,5 +106,18 @@ mainLoop:
 	err := scanner.Err()
 	if err != nil {
 		fmt.Fprintf(p, "Read error: %v\n", err.Error())
+	}
+}
+
+func (s *server) listenForKilledMobs() {
+	for deadMob := range s.killedMobs {
+		s.mobsLock.Lock()
+		for i, m := range s.mobs {
+			if m != deadMob {
+				continue
+			}
+			s.mobs = append(s.mobs[:i], s.mobs[i+1:]...)
+		}
+		s.mobsLock.Unlock()
 	}
 }
