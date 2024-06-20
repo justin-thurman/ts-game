@@ -8,6 +8,7 @@ import (
 	"slices"
 	"sync"
 	"time"
+	playerModule "ts-game/player"
 )
 
 type server struct {
@@ -19,6 +20,7 @@ type client struct {
 	io.Reader
 	io.Writer
 	exitCallback func()
+	player       *playerModule.Player
 }
 
 func New() *server {
@@ -26,10 +28,17 @@ func New() *server {
 }
 
 func (s *server) Connect(r io.Reader, w io.Writer, exitCallback func()) {
-	log.Info("User connected")
-	c := client{r, w, exitCallback}
+	fmt.Fprintln(w, "Welcome! What is your name?")
+	scanner := bufio.NewScanner(r)
+	var player *playerModule.Player
+	for scanner.Scan() {
+		name := scanner.Text()
+		player = playerModule.New(name)
+		break
+	}
+	c := client{r, w, exitCallback, player}
 	s.clients = append(s.clients, &c)
-	log.Info("Clients", "count", len(s.clients))
+	log.Info("User connected", "user", player.Name, "clientCount", len(s.clients))
 	go s.listenForCommands(&c)
 }
 
@@ -53,8 +62,7 @@ func (s *server) listenForCommands(c *client) {
 			s.clientLock.Lock()
 			s.clients = slices.DeleteFunc(s.clients, func(item *client) bool { return item == c })
 			s.clientLock.Unlock()
-			log.Info("User exit")
-			log.Info("Clients", "count", len(s.clients))
+			log.Info("User exit", "user", c.player.Name, "clientCount", len(s.clients))
 			break
 		}
 		fmt.Fprintf(c, "You entered: %s\n", line)
