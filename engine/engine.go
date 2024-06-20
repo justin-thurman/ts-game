@@ -14,14 +14,15 @@ type server struct {
 type client struct {
 	io.Reader
 	io.Writer
+	exitCallback func()
 }
 
 func New() *server {
 	return &server{}
 }
 
-func (s *server) Connect(r io.Reader, w io.Writer) {
-	c := client{r, w}
+func (s *server) Connect(r io.Reader, w io.Writer, exitCallback func()) {
+	c := client{r, w, exitCallback}
 	s.clients = append(s.clients, &c)
 	go s.listenForCommands(&c)
 }
@@ -42,7 +43,7 @@ func (s *server) listenForCommands(c *client) {
 	for scanner.Scan() {
 		line := scanner.Text()
 		if line == "exit" || line == "quit" {
-			// TODO: formalize quit/exit logic
+			c.exitCallback()
 			break
 		}
 		fmt.Fprintf(c, "You entered: %s\n", line)
