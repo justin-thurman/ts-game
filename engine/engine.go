@@ -9,16 +9,19 @@ import (
 	"strings"
 	"sync"
 	"time"
+	"ts-game/mob"
 	playerModule "ts-game/player"
 )
 
 type server struct {
 	players    []*playerModule.Player
+	mobs       []*mob.Mob
 	playerLock sync.RWMutex
 }
 
 func New() *server {
-	return &server{}
+	starterMob := mob.New("ant")
+	return &server{mobs: []*mob.Mob{starterMob}}
 }
 
 func (s *server) Connect(r io.Reader, w io.Writer, exitCallback func()) {
@@ -41,8 +44,8 @@ func (s *server) Connect(r io.Reader, w io.Writer, exitCallback func()) {
 func (s *server) Start() error {
 	round := 1
 	for {
-		for _, c := range s.players {
-			fmt.Fprintf(c, "Beginning round: %d\n", round)
+		for _, p := range s.players {
+			go p.Tick()
 		}
 		round++
 		time.Sleep(time.Second * 6)
@@ -76,6 +79,23 @@ mainLoop:
 				}
 				player.Send("%s gossips, \"%s\"", p.Name, cmdArgs)
 			}
+		case strings.HasPrefix("kill", cmd):
+			if strings.TrimSpace(cmdArgs) == "" {
+				p.Send("Who do you want to kill?")
+				break
+			}
+			var target *mob.Mob
+			for _, tar := range s.mobs {
+				if strings.HasPrefix(tar.Name, cmdArgs) {
+					target = tar
+					break
+				}
+			}
+			if target == nil {
+				p.Send("No one named %s here!", cmdArgs)
+				break
+			}
+			p.BeginCombat(target)
 		default:
 			p.Send("Unknown command: %s\n", cmd)
 		}
