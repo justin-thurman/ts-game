@@ -12,15 +12,8 @@ import (
 )
 
 type server struct {
-	clients    []*client
-	clientLock sync.RWMutex
-}
-
-type client struct {
-	io.Reader
-	io.Writer
-	exitCallback func()
-	player       *playerModule.Player
+	players    []*playerModule.Player
+	playerLock sync.RWMutex
 }
 
 func New() *server {
@@ -33,20 +26,19 @@ func (s *server) Connect(r io.Reader, w io.Writer, exitCallback func()) {
 	var player *playerModule.Player
 	for scanner.Scan() {
 		name := scanner.Text()
-		player = playerModule.New(name)
+		player = playerModule.New(name, r, w, exitCallback)
 		break
 	}
-	c := client{r, w, exitCallback, player}
-	s.clients = append(s.clients, &c)
-	log.Info("User connected", "user", player.Name, "clientCount", len(s.clients))
+	s.players = append(s.players, player)
+	log.Info("User connected", "user", player.Name, "clientCount", len(s.players))
 	fmt.Fprintf(w, "Welcome to my very professional game, %s!\n", player.Name)
-	go s.listenForCommands(&c)
+	go s.listenForCommands(player)
 }
 
 func (s *server) Start() error {
 	round := 1
 	for {
-		for _, c := range s.clients {
+		for _, c := range s.players {
 			fmt.Fprintf(c, "Beginning round: %d\n", round)
 		}
 		round++
@@ -54,22 +46,22 @@ func (s *server) Start() error {
 	}
 }
 
-func (s *server) listenForCommands(c *client) {
-	scanner := bufio.NewScanner(c)
+func (s *server) listenForCommands(p *playerModule.Player) {
+	scanner := bufio.NewScanner(p)
 	for scanner.Scan() {
 		line := scanner.Text()
 		if line == "exit" || line == "quit" {
-			c.exitCallback()
-			s.clientLock.Lock()
-			s.clients = slices.DeleteFunc(s.clients, func(item *client) bool { return item == c })
-			s.clientLock.Unlock()
-			log.Info("User exit", "user", c.player.Name, "clientCount", len(s.clients))
+			s.playerLock.Lock()
+			s.players = slices.DeleteFunc(s.players, func(player *playerModule.Player) bool { return player == p })
+			s.playerLock.Unlock()
+			p.Quit()
+			log.Info("User exit", "user", p.Name, "clientCount", len(s.players))
 			break
 		}
-		fmt.Fprintf(c, "You entered: %s\n", line)
+		fmt.Fprintf(p, "You entered: %s\n", line)
 	}
 	err := scanner.Err()
 	if err != nil {
-		fmt.Fprintf(c, "Read error: %v\n", err.Error())
+		fmt.Fprintf(p, "Read error: %v\n", err.Error())
 	}
 }
