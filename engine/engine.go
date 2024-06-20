@@ -39,6 +39,7 @@ func (s *server) Connect(r io.Reader, w io.Writer, exitCallback func()) {
 	c := client{r, w, exitCallback, player}
 	s.clients = append(s.clients, &c)
 	log.Info("User connected", "user", player.Name, "clientCount", len(s.clients))
+	fmt.Fprintf(w, "Welcome to my very professional game, %s!\n", player.Name)
 	go s.listenForCommands(&c)
 }
 
