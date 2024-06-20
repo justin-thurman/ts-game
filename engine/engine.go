@@ -4,11 +4,15 @@ import (
 	"bufio"
 	"fmt"
 	"io"
+	log "log/slog"
+	"slices"
+	"sync"
 	"time"
 )
 
 type server struct {
-	clients []*client
+	clients    []*client
+	clientLock sync.RWMutex
 }
 
 type client struct {
@@ -22,8 +26,10 @@ func New() *server {
 }
 
 func (s *server) Connect(r io.Reader, w io.Writer, exitCallback func()) {
+	log.Info("User connected")
 	c := client{r, w, exitCallback}
 	s.clients = append(s.clients, &c)
+	log.Info("Clients", "count", len(s.clients))
 	go s.listenForCommands(&c)
 }
 
@@ -44,6 +50,11 @@ func (s *server) listenForCommands(c *client) {
 		line := scanner.Text()
 		if line == "exit" || line == "quit" {
 			c.exitCallback()
+			s.clientLock.Lock()
+			s.clients = slices.DeleteFunc(s.clients, func(item *client) bool { return item == c })
+			s.clientLock.Unlock()
+			log.Info("User exit")
+			log.Info("Clients", "count", len(s.clients))
 			break
 		}
 		fmt.Fprintf(c, "You entered: %s\n", line)
