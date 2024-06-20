@@ -6,6 +6,7 @@ import (
 	"io"
 	log "log/slog"
 	"slices"
+	"strings"
 	"sync"
 	"time"
 	playerModule "ts-game/player"
@@ -50,17 +51,22 @@ func (s *server) Start() error {
 
 func (s *server) listenForCommands(p *playerModule.Player) {
 	scanner := bufio.NewScanner(p)
+mainLoop:
 	for scanner.Scan() {
 		line := scanner.Text()
-		if line == "exit" || line == "quit" {
+		switch {
+		case line == "exit" || line == "quit":
 			s.playerLock.Lock()
 			s.players = slices.DeleteFunc(s.players, func(player *playerModule.Player) bool { return player == p })
 			s.playerLock.Unlock()
 			p.Quit()
 			log.Info("User exit", "user", p.Name, "clientCount", len(s.players))
-			break
+			break mainLoop
+		case strings.HasPrefix("gossip", strings.Split(line, " ")[0]):
+			fmt.Fprintf(p, "You gossiped: %s\n", line)
+		default:
+			fmt.Fprintf(p, "You entered: %s\n", line)
 		}
-		fmt.Fprintf(p, "You entered: %s\n", line)
 	}
 	err := scanner.Err()
 	if err != nil {
