@@ -29,7 +29,9 @@ func (s *server) Connect(r io.Reader, w io.Writer, exitCallback func()) {
 		player = playerModule.New(name, r, w, exitCallback)
 		break
 	}
+	s.playerLock.Lock()
 	s.players = append(s.players, player)
+	s.playerLock.Unlock()
 	log.Info("User connected", "user", player.Name, "clientCount", len(s.players))
 	fmt.Fprintf(w, "Welcome to my very professional game, %s!\n", player.Name)
 	go s.listenForCommands(player)
