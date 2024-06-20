@@ -7,29 +7,48 @@ import (
 	"time"
 )
 
-func Hello() {
-	fmt.Println("Hello from Engine!")
+type server struct {
+	clients []*client
 }
 
-func Run(r io.Reader, w io.Writer) error {
-	scanner := bufio.NewScanner(r)
-	go func(s *bufio.Scanner) {
-		for s.Scan() {
-			line := s.Text()
-			if line == "exit" || line == "quit" {
-				break
-			}
-			fmt.Fprintf(w, "You entered: %s\n", line)
-		}
-		err := s.Err()
-		if err != nil {
-			fmt.Fprintf(w, "Readrg error: %v\n", err.Error())
-		}
-	}(scanner)
+type client struct {
+	io.Reader
+	io.Writer
+}
+
+func New() *server {
+	return &server{}
+}
+
+func (s *server) Connect(r io.Reader, w io.Writer) {
+	c := client{r, w}
+	s.clients = append(s.clients, &c)
+	go s.listenForCommands(&c)
+}
+
+func (s *server) Start() error {
 	round := 1
 	for {
-		fmt.Fprintf(w, "Begin round %d\n", round)
+		for _, c := range s.clients {
+			fmt.Fprintf(c, "Beginning round: %d\n", round)
+		}
 		round++
 		time.Sleep(time.Second * 6)
+	}
+}
+
+func (s *server) listenForCommands(c *client) {
+	scanner := bufio.NewScanner(c)
+	for scanner.Scan() {
+		line := scanner.Text()
+		if line == "exit" || line == "quit" {
+			// TODO: formalize quit/exit logic
+			break
+		}
+		fmt.Fprintf(c, "You entered: %s\n", line)
+	}
+	err := scanner.Err()
+	if err != nil {
+		fmt.Fprintf(c, "Read error: %v\n", err.Error())
 	}
 }

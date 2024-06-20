@@ -6,6 +6,7 @@ import (
 )
 
 func main() {
-	engine.Hello()
-	engine.Run(os.Stdin, os.Stdout)
+	server := engine.New()
+	server.Connect(os.Stdin, os.Stdout)
+	server.Start()
 }
