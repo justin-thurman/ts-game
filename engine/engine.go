@@ -55,6 +55,8 @@ mainLoop:
 	for scanner.Scan() {
 		cmd, cmdArgs, _ := strings.Cut(scanner.Text(), " ")
 		switch {
+		case cmd == "":
+			p.Send("")
 		case cmd == "exit" || cmd == "quit":
 			s.playerLock.Lock()
 			s.players = slices.DeleteFunc(s.players, func(player *playerModule.Player) bool { return player == p })
@@ -63,7 +65,17 @@ mainLoop:
 			log.Info("User exit", "user", p.Name, "clientCount", len(s.players))
 			break mainLoop
 		case strings.HasPrefix("gossip", cmd):
-			p.Send("You gossiped: %s\n", cmdArgs)
+			if strings.TrimSpace(cmdArgs) == "" {
+				p.Send("What do you want to gossip?")
+				break
+			}
+			p.Send("You gossip, \"%s\"", cmdArgs)
+			for _, player := range s.players {
+				if player == p {
+					continue
+				}
+				player.Send("%s gossips, \"%s\"", p.Name, cmdArgs)
+			}
 		default:
 			p.Send("Unknown command: %s\n", cmd)
 		}

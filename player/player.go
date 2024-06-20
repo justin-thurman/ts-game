@@ -5,7 +5,7 @@ import (
 	"io"
 )
 
-const PROMPT string = ">>>"
+const PROMPT string = ">>> "
 
 type Player struct {
 	io.Reader
