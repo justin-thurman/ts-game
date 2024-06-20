@@ -1,0 +1,1 @@
+- [ ] Move combat management into its own module, or maybe just in server. Since it involves a player and a mob, it shouldn't in either of those modules

@@ -21,7 +21,7 @@ func New(name string) *Mob {
 }
 
 func (m *Mob) TakeDamage(dam int) {
-	// TODO: This has race conditions if multiple people fight the same mob; probably need a channel to process incoming damage every tick
+	// TODO: This has race conditions if multiple people fight the same mob; probably need a channel to process incoming damage every tick, or a lock
 	m.currHealth = m.currHealth - dam
 	if m.currHealth <= 0 {
 		m.Dead = true

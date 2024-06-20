@@ -60,7 +60,6 @@ func (p *Player) Tick() {
 		p.fighting.TakeDamage(playerDamage)
 		p.Send("You did %d damage!", playerDamage)
 		if p.fighting.Dead {
-			// TODO: Handle mob death
 			p.Send("You killed %s!", p.fighting.Name)
 			p.killedMobs <- p.fighting
 			p.fighting = nil
