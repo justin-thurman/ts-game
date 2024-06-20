@@ -53,19 +53,19 @@ func (s *server) listenForCommands(p *playerModule.Player) {
 	scanner := bufio.NewScanner(p)
 mainLoop:
 	for scanner.Scan() {
-		line := scanner.Text()
+		cmd, cmdArgs, _ := strings.Cut(scanner.Text(), " ")
 		switch {
-		case line == "exit" || line == "quit":
+		case cmd == "exit" || cmd == "quit":
 			s.playerLock.Lock()
 			s.players = slices.DeleteFunc(s.players, func(player *playerModule.Player) bool { return player == p })
 			s.playerLock.Unlock()
 			p.Quit()
 			log.Info("User exit", "user", p.Name, "clientCount", len(s.players))
 			break mainLoop
-		case strings.HasPrefix("gossip", strings.Split(line, " ")[0]):
-			fmt.Fprintf(p, "You gossiped: %s\n", line)
+		case strings.HasPrefix("gossip", cmd):
+			fmt.Fprintf(p, "You gossiped: %s\n", cmdArgs)
 		default:
-			fmt.Fprintf(p, "You entered: %s\n", line)
+			fmt.Fprintf(p, "Unknown command: %s\n", cmd)
 		}
 	}
 	err := scanner.Err()
