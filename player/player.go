@@ -17,6 +17,11 @@ func New(name string, r io.Reader, w io.Writer, exitCallback func()) *Player {
 }
 
 func (p *Player) Quit() {
+	p.save()
 	fmt.Fprintf(p, "Goodbye, %s!\n", p.Name)
 	p.exitCallback()
+}
+
+func (p *Player) save() {
+	fmt.Fprintln(p, "If we had persistence, we'd be saving your character now.")
 }
