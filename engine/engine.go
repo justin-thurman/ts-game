@@ -18,7 +18,6 @@ type server struct {
 	killedMobs chan *mob.Mob
 	mobs       []*mob.Mob
 	playerLock sync.RWMutex
-	mobsLock   sync.RWMutex
 }
 
 func New() *server {
@@ -111,13 +110,11 @@ mainLoop:
 
 func (s *server) listenForKilledMobs() {
 	for deadMob := range s.killedMobs {
-		s.mobsLock.Lock()
 		for i, m := range s.mobs {
 			if m != deadMob {
 				continue
 			}
 			s.mobs = append(s.mobs[:i], s.mobs[i+1:]...)
 		}
-		s.mobsLock.Unlock()
 	}
 }
