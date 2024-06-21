@@ -1,13 +1,21 @@
 package mob
 
-import "math/rand/v2"
+import (
+	"math/rand/v2"
+	"sync"
+)
 
 // Returns a random integer in the closed range [min, max]
 func randRange(min, max int) int {
 	return rand.IntN(max+1-min) + min
 }
 
+type Combatant interface {
+	TakeDamage()
+}
+
 type Mob struct {
+	sync.Mutex
 	Name       string
 	minDamage  int
 	maxDamage  int

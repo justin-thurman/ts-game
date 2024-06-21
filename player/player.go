@@ -14,9 +14,13 @@ func randRange(min, max int) int {
 
 const PROMPT string = ">>> "
 
+type location interface {
+	HandleLook() string
+	HandleKill(*Player, string)
+}
+
 type Player struct {
-	fighting   *mob.Mob
-	killedMobs chan *mob.Mob
+	incomingDamage chan int
 	io.Reader
 	io.Writer
 	exitCallback func()
@@ -25,10 +29,22 @@ type Player struct {
 	maxDamage    int
 	currHealth   int
 	maxHealth    int
+	inCombat     bool
+	Location     location
 }
 
-func New(name string, r io.Reader, w io.Writer, exitCallback func(), killedMobs chan *mob.Mob) *Player {
-	return &Player{Name: name, Reader: r, Writer: w, exitCallback: exitCallback, minDamage: 1, maxDamage: 8, currHealth: 30, maxHealth: 30, killedMobs: killedMobs}
+func New(name string, r io.Reader, w io.Writer, exitCallback func()) *Player {
+	return &Player{
+		Name:         name,
+		Reader:       r,
+		Writer:       w,
+		exitCallback: exitCallback,
+		minDamage:    1,
+		maxDamage:    8,
+		currHealth:   30,
+		maxHealth:    30,
+		inCombat:     false,
+	}
 }
 
 func (p *Player) Quit() {
@@ -48,34 +64,21 @@ func (p *Player) Send(msg string, a ...any) {
 }
 
 func (p *Player) Tick() {
-	p.Send("Ticking...")
-	if p.fighting == nil {
-		// Then we're regening
-		if p.currHealth < p.maxHealth {
-			p.maxHealth = p.maxHealth + 1
-		}
-	} else {
-		// Then we're fighting
-		playerDamage := randRange(p.minDamage, p.maxDamage)
-		p.fighting.TakeDamage(playerDamage)
-		p.Send("You did %d damage!", playerDamage)
-		if p.fighting.Dead {
-			p.Send("You killed %s!", p.fighting.Name)
-			p.killedMobs <- p.fighting
-			p.fighting = nil
-		} else {
-			mobDamage := p.fighting.GetDamage()
-			p.currHealth -= mobDamage
-			p.Send("%s does %d damage to you! You have %d health remaining.", p.fighting.Name, mobDamage, p.currHealth)
-			if p.currHealth <= 0 {
-				p.Send("You died!")
-				p.fighting = nil
-			}
-		}
-	}
 }
 
-func (p *Player) BeginCombat(m *mob.Mob) {
-	p.fighting = m
+func (p *Player) EnterCombat(m *mob.Mob) {
 	p.Send("You begin to fight %s!", m.Name)
+	p.inCombat = true
+}
+
+func (p *Player) LeaveCombat() {
+	p.inCombat = false
+}
+
+func (p *Player) GetDamage() int {
+	return randRange(p.minDamage, p.maxDamage)
+}
+
+func (p *Player) TakeDamage(damage int) {
+	p.incomingDamage <- damage
 }

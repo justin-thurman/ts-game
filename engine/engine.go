@@ -11,10 +11,12 @@ import (
 	"time"
 	"ts-game/mob"
 	playerModule "ts-game/player"
+	"ts-game/room"
 )
 
 type server struct {
 	players     []*playerModule.Player
+	rooms       []*room.Room
 	killedMobs  chan *mob.Mob
 	spawnedMobs chan *mob.Mob
 	mobs        []*mob.Mob
@@ -31,7 +33,7 @@ func (s *server) Connect(r io.Reader, w io.Writer, exitCallback func()) {
 	var player *playerModule.Player
 	for scanner.Scan() {
 		name := scanner.Text()
-		player = playerModule.New(name, r, w, exitCallback, s.killedMobs)
+		player = playerModule.New(name, r, w, exitCallback)
 		break
 	}
 	s.playerLock.Lock()
@@ -39,6 +41,8 @@ func (s *server) Connect(r io.Reader, w io.Writer, exitCallback func()) {
 	s.playerLock.Unlock()
 	log.Info("User connected", "user", player.Name, "clientCount", len(s.players))
 	player.Send("Welcome to my very professional game, %s!\n", player.Name)
+	player.Location = s.rooms[0]
+	player.Send(player.Location.HandleLook())
 	go s.listenForCommands(player)
 }
 
@@ -46,12 +50,12 @@ func (s *server) Start() error {
 	starterMob := mob.New("ant")
 	s.spawnedMobs <- starterMob
 	go s.listenForMobs()
-	round := 1
+	room := room.New("Town Center", "The center of town. Maybe there's an ant to kill!")
+	s.rooms = append(s.rooms, room)
 	for {
 		for _, p := range s.players {
 			go p.Tick()
 		}
-		round++
 		time.Sleep(time.Second * 6)
 	}
 }
@@ -83,23 +87,14 @@ mainLoop:
 				}
 				player.Send("%s gossips, \"%s\"", p.Name, cmdArgs)
 			}
+		case strings.HasPrefix("look", cmd):
+			p.Send(p.Location.HandleLook())
 		case strings.HasPrefix("kill", cmd):
 			if strings.TrimSpace(cmdArgs) == "" {
 				p.Send("Who do you want to kill?")
 				break
 			}
-			var target *mob.Mob
-			for _, tar := range s.mobs {
-				if strings.HasPrefix(tar.Name, cmdArgs) {
-					target = tar
-					break
-				}
-			}
-			if target == nil {
-				p.Send("No one named %s here!", cmdArgs)
-				break
-			}
-			p.BeginCombat(target)
+			p.Location.HandleKill(p, cmdArgs)
 		default:
 			p.Send("Unknown command: %s\n", cmd)
 		}

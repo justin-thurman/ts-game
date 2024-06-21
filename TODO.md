@@ -1,1 +1,2 @@
-- [ ] Move combat management into its own module, or maybe just in server. Since it involves a player and a mob, it shouldn't in either of those modules
+- [ ] Handle mob death
+- [ ] Move logic for spawning mobs to the room level, rather than at the server (it's not doing anything currently)
