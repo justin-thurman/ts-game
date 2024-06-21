@@ -14,15 +14,15 @@ import (
 )
 
 type server struct {
-	players    []*playerModule.Player
-	killedMobs chan *mob.Mob
-	mobs       []*mob.Mob
-	playerLock sync.RWMutex
+	players     []*playerModule.Player
+	killedMobs  chan *mob.Mob
+	spawnedMobs chan *mob.Mob
+	mobs        []*mob.Mob
+	playerLock  sync.RWMutex
 }
 
 func New() *server {
-	starterMob := mob.New("ant")
-	return &server{mobs: []*mob.Mob{starterMob}, killedMobs: make(chan *mob.Mob, 100)}
+	return &server{killedMobs: make(chan *mob.Mob, 100), spawnedMobs: make(chan *mob.Mob, 100)}
 }
 
 func (s *server) Connect(r io.Reader, w io.Writer, exitCallback func()) {
@@ -43,7 +43,9 @@ func (s *server) Connect(r io.Reader, w io.Writer, exitCallback func()) {
 }
 
 func (s *server) Start() error {
-	go s.listenForKilledMobs()
+	starterMob := mob.New("ant")
+	s.spawnedMobs <- starterMob
+	go s.listenForMobs()
 	round := 1
 	for {
 		for _, p := range s.players {
@@ -108,13 +110,17 @@ mainLoop:
 	}
 }
 
-func (s *server) listenForKilledMobs() {
-	for deadMob := range s.killedMobs {
-		for i, m := range s.mobs {
-			if m != deadMob {
-				continue
+func (s *server) listenForMobs() {
+	for {
+		select {
+		case deadMob := <-s.killedMobs:
+			idx := slices.Index(s.mobs, deadMob)
+			if idx == -1 {
+				log.Error("Dead mob not found", "mob", deadMob)
 			}
-			s.mobs = append(s.mobs[:i], s.mobs[i+1:]...)
+			s.mobs = slices.Delete(s.mobs, idx, idx+1)
+		case spawningMob := <-s.spawnedMobs:
+			s.mobs = append(s.mobs, spawningMob)
 		}
 	}
 }
