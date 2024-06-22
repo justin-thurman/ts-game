@@ -39,3 +39,5 @@ func (m *Mob) TakeDamage(dam int) {
 func (m *Mob) GetDamage() int {
 	return randRange(m.minDamage, m.maxDamage)
 }
+
+func (m *Mob) Tick() {}

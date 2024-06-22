@@ -20,7 +20,6 @@ type location interface {
 }
 
 type Player struct {
-	incomingDamage chan int
 	io.Reader
 	io.Writer
 	exitCallback func()
@@ -80,5 +79,5 @@ func (p *Player) GetDamage() int {
 }
 
 func (p *Player) TakeDamage(damage int) {
-	p.incomingDamage <- damage
+	p.currHealth -= damage
 }

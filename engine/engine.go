@@ -42,19 +42,21 @@ func (s *server) Connect(r io.Reader, w io.Writer, exitCallback func()) {
 	s.playerLock.Unlock()
 	log.Info("User connected", "user", player.Name, "clientCount", len(s.players))
 	player.Send("Welcome to my very professional game, %s!\n", player.Name)
-	player.Location = s.rooms[0]
+	s.rooms[0].AddPlayer(player)
 	player.Send(player.Location.HandleLook())
 	go s.listenForCommands(player)
 }
 
 func (s *server) Start() error {
-	// starterMob := mob.New("ant")
+	starterMob := mob.New("ant")
 	// s.spawnedMobs <- starterMob
 	// go s.listenForMobs()
 	// TODO: mob spawning needs to happen at room level, remove s.listenForMobs
 	room := room.New("Town Center", "The center of town. Maybe there's an ant to kill!")
+	room.AddMob(starterMob)
 	s.rooms = append(s.rooms, room)
 	for {
+		log.Info("Server ticking")
 		for _, r := range s.rooms {
 			go r.Tick()
 		}
