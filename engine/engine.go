@@ -33,6 +33,7 @@ func (s *server) Connect(r io.Reader, w io.Writer, exitCallback func()) {
 	var player *playerModule.Player
 	for scanner.Scan() {
 		name := scanner.Text()
+		// TODO: validate name, go back to loop if invalid
 		player = playerModule.New(name, r, w, exitCallback)
 		break
 	}
@@ -47,14 +48,15 @@ func (s *server) Connect(r io.Reader, w io.Writer, exitCallback func()) {
 }
 
 func (s *server) Start() error {
-	starterMob := mob.New("ant")
-	s.spawnedMobs <- starterMob
-	go s.listenForMobs()
+	// starterMob := mob.New("ant")
+	// s.spawnedMobs <- starterMob
+	// go s.listenForMobs()
+	// TODO: mob spawning needs to happen at room level, remove s.listenForMobs
 	room := room.New("Town Center", "The center of town. Maybe there's an ant to kill!")
 	s.rooms = append(s.rooms, room)
 	for {
-		for _, p := range s.players {
-			go p.Tick()
+		for _, r := range s.rooms {
+			go r.Tick()
 		}
 		time.Sleep(time.Second * 6)
 	}
