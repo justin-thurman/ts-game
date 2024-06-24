@@ -30,7 +30,7 @@ type Player struct {
 	currHealth   int
 	maxHealth    int
 	inCombat     bool
-	Location     location
+	location     location
 	sync.Mutex
 }
 
@@ -84,4 +84,12 @@ func (p *Player) TakeDamage(damage int) {
 	p.Lock()
 	defer p.Unlock()
 	p.currHealth -= damage
+}
+
+func (p *Player) Location() location {
+	return p.location
+}
+
+func (p *Player) SetLocation(l location) {
+	p.location = l
 }

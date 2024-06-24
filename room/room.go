@@ -137,5 +137,5 @@ func (r *Room) AddPlayer(p *player.Player) {
 	r.Lock()
 	defer r.Unlock()
 	r.players[p] = []*mob.Mob{}
-	p.Location = r
+	p.SetLocation(r)
 }

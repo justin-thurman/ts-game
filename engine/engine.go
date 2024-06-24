@@ -41,7 +41,7 @@ func (s *server) Connect(r io.Reader, w io.Writer, exitCallback func()) {
 	log.Info("User connected", "user", player.Name, "clientCount", len(s.players))
 	player.Send("Welcome to my very professional game, %s!\n", player.Name)
 	s.rooms[0].AddPlayer(player)
-	player.Send(player.Location.HandleLook())
+	player.Send(player.Location().HandleLook())
 	go s.listenForCommands(player)
 }
 
@@ -87,13 +87,13 @@ mainLoop:
 				player.Send("%s gossips, \"%s\"", p.Name, cmdArgs)
 			}
 		case strings.HasPrefix("look", cmd):
-			p.Send(p.Location.HandleLook())
+			p.Send(p.Location().HandleLook())
 		case strings.HasPrefix("kill", cmd):
 			if strings.TrimSpace(cmdArgs) == "" {
 				p.Send("Who do you want to kill?")
 				break
 			}
-			p.Location.HandleKill(p, cmdArgs)
+			p.Location().HandleKill(p, cmdArgs)
 		default:
 			p.Send("Unknown command: %s\n", cmd)
 		}
