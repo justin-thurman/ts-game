@@ -15,16 +15,14 @@ import (
 )
 
 type server struct {
-	players     []*playerModule.Player
-	rooms       []*room.Room
-	killedMobs  chan *mob.Mob
-	spawnedMobs chan *mob.Mob
-	mobs        []*mob.Mob
-	playerLock  sync.RWMutex
+	players    []*playerModule.Player
+	rooms      []*room.Room
+	mobs       []*mob.Mob
+	playerLock sync.RWMutex
 }
 
 func New() *server {
-	return &server{killedMobs: make(chan *mob.Mob, 100), spawnedMobs: make(chan *mob.Mob, 100)}
+	return &server{}
 }
 
 func (s *server) Connect(r io.Reader, w io.Writer, exitCallback func()) {
@@ -49,9 +47,6 @@ func (s *server) Connect(r io.Reader, w io.Writer, exitCallback func()) {
 
 func (s *server) Start() error {
 	starterMob := mob.New("ant")
-	// s.spawnedMobs <- starterMob
-	// go s.listenForMobs()
-	// TODO: mob spawning needs to happen at room level, remove s.listenForMobs
 	room := room.New("Town Center", "The center of town. Maybe there's an ant to kill!")
 	room.AddMob(starterMob)
 	s.rooms = append(s.rooms, room)
@@ -105,21 +100,6 @@ mainLoop:
 	}
 	err := scanner.Err()
 	if err != nil {
-		fmt.Fprintf(p, "Read error: %v\n", err.Error())
-	}
-}
-
-func (s *server) listenForMobs() {
-	for {
-		select {
-		case deadMob := <-s.killedMobs:
-			idx := slices.Index(s.mobs, deadMob)
-			if idx == -1 {
-				log.Error("Dead mob not found", "mob", deadMob)
-			}
-			s.mobs = slices.Delete(s.mobs, idx, idx+1)
-		case spawningMob := <-s.spawnedMobs:
-			s.mobs = append(s.mobs, spawningMob)
-		}
+		log.Info("Read error", "error", err.Error())
 	}
 }

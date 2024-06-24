@@ -15,13 +15,13 @@ type Combatant interface {
 }
 
 type Mob struct {
-	sync.Mutex
 	Name       string
 	minDamage  int
 	maxDamage  int
 	currHealth int
 	maxHealth  int
 	Dead       bool
+	sync.Mutex
 }
 
 func New(name string) *Mob {
@@ -29,7 +29,8 @@ func New(name string) *Mob {
 }
 
 func (m *Mob) TakeDamage(dam int) {
-	// TODO: This has race conditions if multiple people fight the same mob; probably need a channel to process incoming damage every tick, or a lock
+	m.Lock()
+	defer m.Unlock()
 	m.currHealth = m.currHealth - dam
 	if m.currHealth <= 0 {
 		m.Dead = true

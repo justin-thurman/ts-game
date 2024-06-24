@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"math/rand/v2"
+	"sync"
 	"ts-game/mob"
 )
 
@@ -30,6 +31,7 @@ type Player struct {
 	maxHealth    int
 	inCombat     bool
 	Location     location
+	sync.Mutex
 }
 
 func New(name string, r io.Reader, w io.Writer, exitCallback func()) *Player {
@@ -79,5 +81,7 @@ func (p *Player) GetDamage() int {
 }
 
 func (p *Player) TakeDamage(damage int) {
+	p.Lock()
+	defer p.Unlock()
 	p.currHealth -= damage
 }
