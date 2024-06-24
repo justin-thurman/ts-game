@@ -68,11 +68,7 @@ mainLoop:
 		case cmd == "":
 			p.Send("")
 		case cmd == "exit" || cmd == "quit":
-			s.playerLock.Lock()
-			s.players = slices.DeleteFunc(s.players, func(player *playerModule.Player) bool { return player == p })
-			s.playerLock.Unlock()
-			p.Quit()
-			log.Info("User exit", "user", p.Name, "clientCount", len(s.players))
+			// Logic handled below in order to also save users on disconnect
 			break mainLoop
 		case strings.HasPrefix("gossip", cmd):
 			if strings.TrimSpace(cmdArgs) == "" {
@@ -102,4 +98,9 @@ mainLoop:
 	if err != nil {
 		log.Info("Read error", "error", err.Error())
 	}
+	s.playerLock.Lock()
+	s.players = slices.DeleteFunc(s.players, func(player *playerModule.Player) bool { return player == p })
+	s.playerLock.Unlock()
+	p.Quit()
+	log.Info("User exit", "user", p.Name, "clientCount", len(s.players))
 }
