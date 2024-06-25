@@ -11,32 +11,42 @@ import (
 )
 
 type Room struct {
-	description string
-	name        string
-	players     map[*player.Player][]*mob.Mob
-	mobs        map[*mob.Mob][]*player.Player // similar map of mobs to players
+	players         map[*player.Player][]*mob.Mob
+	mobs            map[*mob.Mob][]*player.Player // similar map of mobs to players
+	description     string
+	descriptionBase string
+	name            string
 	sync.Mutex
 }
 
 func New(name, description string) *Room {
-	return &Room{
-		name:        name,
-		description: description,
-		mobs:        make(map[*mob.Mob][]*player.Player),
-		players:     make(map[*player.Player][]*mob.Mob),
+	room := &Room{
+		name:            name,
+		descriptionBase: description,
+		mobs:            make(map[*mob.Mob][]*player.Player),
+		players:         make(map[*player.Player][]*mob.Mob),
 	}
+	room.updateDescription()
+	return room
 }
 
 func (r *Room) HandleLook() string {
-	r.Lock()
-	defer r.Unlock()
-	// FIX: This lock is awful. Find another way
-	nameAndDescription := fmt.Sprintf("%s\n%s", r.name, r.description)
+	return r.description
+}
+
+func (r *Room) updateDescription() {
+	nameAndDescription := fmt.Sprintf("%s\n%s", r.name, r.descriptionBase)
 	descList := []string{nameAndDescription}
-	for m := range r.mobs {
-		descList = append(descList, fmt.Sprintf("%s is standing here.", m.Name))
+	for m, players := range r.mobs {
+		var s string
+		if len(players) == 0 {
+			s = fmt.Sprintf("%s is standing here.", m.Name)
+		} else {
+			s = fmt.Sprintf("%s is fighting for its life!", m.Name)
+		}
+		descList = append(descList, s)
 	}
-	return strings.Join(descList, "\n")
+	r.description = strings.Join(descList, "\n")
 }
 
 func (r *Room) HandleKill(p *player.Player, mobName string) {
@@ -63,6 +73,7 @@ func (r *Room) HandleKill(p *player.Player, mobName string) {
 	}
 	p.BufferMsg("You begin to fight %s!", target.Name)
 	defer p.SendBufferedMsgs()
+	defer r.updateDescription()
 	r.startCombat(p, target)
 }
 
@@ -70,6 +81,7 @@ func (r *Room) Tick() {
 	slog.Info("Room ticking")
 	r.Lock()
 	defer r.Unlock()
+	defer r.updateDescription()
 	// Handle player rounds
 	for p, mobs := range r.players {
 		defer p.SendBufferedMsgs()

@@ -24,8 +24,8 @@ type location interface {
 type Player struct {
 	io.Reader
 	io.Writer
-	location location
-	sync.Mutex
+	location          location
+	msgBuffer         strings.Builder
 	exitCallback      func()
 	Name              string
 	minDamage         int
@@ -36,7 +36,7 @@ type Player struct {
 	xpTolevel         int
 	level             int
 	HasActedThisRound bool
-	msgBuffer         strings.Builder
+	sync.Mutex
 }
 
 func New(name string, r io.Reader, w io.Writer, exitCallback func()) *Player {
