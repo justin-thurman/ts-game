@@ -6,7 +6,6 @@ import (
 	"math"
 	"math/rand/v2"
 	"sync"
-	"ts-game/mob"
 )
 
 // Returns a random integer in the closed range [min, max]
@@ -26,16 +25,16 @@ type Player struct {
 	io.Writer
 	location location
 	sync.Mutex
-	exitCallback func()
-	Name         string
-	minDamage    int
-	maxDamage    int
-	currHealth   int
-	maxHealth    int
-	currXp       int
-	xpTolevel    int
-	level        int
-	inCombat     bool
+	exitCallback      func()
+	Name              string
+	minDamage         int
+	maxDamage         int
+	currHealth        int
+	maxHealth         int
+	currXp            int
+	xpTolevel         int
+	level             int
+	HasActedThisRound bool
 }
 
 func New(name string, r io.Reader, w io.Writer, exitCallback func()) *Player {
@@ -48,7 +47,6 @@ func New(name string, r io.Reader, w io.Writer, exitCallback func()) *Player {
 		maxDamage:    8,
 		currHealth:   30,
 		maxHealth:    30,
-		inCombat:     false,
 		level:        1,
 		xpTolevel:    xpToLevel(1),
 	}
@@ -71,15 +69,6 @@ func (p *Player) Send(msg string, a ...any) {
 }
 
 func (p *Player) Tick() {
-}
-
-func (p *Player) EnterCombat(m *mob.Mob) {
-	p.Send("You begin to fight %s!", m.Name)
-	p.inCombat = true
-}
-
-func (p *Player) LeaveCombat() {
-	p.inCombat = false
 }
 
 func (p *Player) Damage() int {

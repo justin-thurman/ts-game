@@ -61,8 +61,8 @@ func (r *Room) HandleKill(p *player.Player, mobName string) {
 		p.Send("You're doing your best!")
 		return
 	}
-	r.startCombat(p, target)
 	p.Send("You begin to fight %s!", target.Name)
+	r.startCombat(p, target)
 }
 
 func (r *Room) Tick() {
@@ -76,6 +76,10 @@ func (r *Room) Tick() {
 			p.Tick()
 			continue
 		}
+		if p.HasActedThisRound {
+			p.HasActedThisRound = false
+			continue
+		}
 		target := mobs[0] // TODO: player will need control over this later; and AoE damage
 		damage := p.Damage()
 		target.TakeDamage(damage)
@@ -85,6 +89,7 @@ func (r *Room) Tick() {
 			p.Send("You killed %s!", target.Name)
 			p.GainXp(target.XpValue())
 		}
+		p.HasActedThisRound = false
 	}
 	// Handle mob rounds
 	for m, players := range r.mobs {
@@ -112,6 +117,12 @@ func (r *Room) mobIsInRoom(m *mob.Mob) bool {
 }
 
 func (r *Room) startCombat(p *player.Player, m *mob.Mob) {
+	if !p.HasActedThisRound {
+		damage := p.Damage()
+		m.TakeDamage(damage)
+		p.Send("You deal %d damage to %s!", damage, m.Name)
+		p.HasActedThisRound = true
+	}
 	r.players[p] = append(r.players[p], m)
 	r.mobs[m] = append(r.mobs[m], p)
 }
