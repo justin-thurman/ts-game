@@ -134,6 +134,7 @@ func (r *Room) startCombat(p *player.Player, m *mob.Mob) {
 	if !p.HasActedThisRound {
 		damage := p.Damage()
 		m.TakeDamage(damage)
+		// FIX: take into account mob might die; extract helper methods for player and mob rounds
 		p.BufferMsg("You deal %d damage to %s!", damage, m.Name)
 		p.HasActedThisRound = true
 	}
@@ -156,12 +157,14 @@ func (r *Room) removeMob(m *mob.Mob) {
 func (r *Room) AddMob(m *mob.Mob) {
 	r.Lock()
 	defer r.Unlock()
+	defer r.updateDescription()
 	r.mobs[m] = []*player.Player{}
 }
 
 func (r *Room) AddPlayer(p *player.Player) {
 	r.Lock()
 	defer r.Unlock()
+	defer r.updateDescription()
 	r.players[p] = []*mob.Mob{}
 	p.SetLocation(r)
 }
