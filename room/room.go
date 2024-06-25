@@ -61,7 +61,8 @@ func (r *Room) HandleKill(p *player.Player, mobName string) {
 		p.Send("You're doing your best!")
 		return
 	}
-	p.Send("You begin to fight %s!", target.Name)
+	p.BufferMsg("You begin to fight %s!", target.Name)
+	defer p.SendBufferedMsgs()
 	r.startCombat(p, target)
 }
 
@@ -71,6 +72,7 @@ func (r *Room) Tick() {
 	defer r.Unlock()
 	// Handle player rounds
 	for p, mobs := range r.players {
+		defer p.SendBufferedMsgs()
 		playerIsInCombat := len(mobs) > 0
 		if !playerIsInCombat {
 			p.Tick()
@@ -83,10 +85,10 @@ func (r *Room) Tick() {
 		target := mobs[0] // TODO: player will need control over this later; and AoE damage
 		damage := p.Damage()
 		target.TakeDamage(damage)
-		p.Send("You deal %d damage to %s!", damage, target.Name)
+		p.BufferMsg("You deal %d damage to %s!", damage, target.Name)
 		if target.Dead {
 			r.removeMob(target)
-			p.Send("You killed %s!", target.Name)
+			p.BufferMsg("You killed %s!", target.Name)
 			p.GainXp(target.XpValue())
 		}
 		p.HasActedThisRound = false
@@ -101,7 +103,7 @@ func (r *Room) Tick() {
 		target := players[0] // TODO: will need an aggro system later
 		damage := m.Damage()
 		target.TakeDamage(damage)
-		target.Send("%s dealt %d damage to you!", m.Name, damage)
+		target.BufferMsg("%s dealt %d damage to you!", m.Name, damage)
 		// TODO: handle player death
 	}
 }
@@ -120,7 +122,7 @@ func (r *Room) startCombat(p *player.Player, m *mob.Mob) {
 	if !p.HasActedThisRound {
 		damage := p.Damage()
 		m.TakeDamage(damage)
-		p.Send("You deal %d damage to %s!", damage, m.Name)
+		p.BufferMsg("You deal %d damage to %s!", damage, m.Name)
 		p.HasActedThisRound = true
 	}
 	r.players[p] = append(r.players[p], m)

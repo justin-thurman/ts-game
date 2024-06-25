@@ -5,6 +5,7 @@ import (
 	"io"
 	"math"
 	"math/rand/v2"
+	"strings"
 	"sync"
 )
 
@@ -35,6 +36,7 @@ type Player struct {
 	xpTolevel         int
 	level             int
 	HasActedThisRound bool
+	msgBuffer         strings.Builder
 }
 
 func New(name string, r io.Reader, w io.Writer, exitCallback func()) *Player {
@@ -62,10 +64,25 @@ func (p *Player) save() {
 	p.Send("If we had persistence, we'd be saving your character now.")
 }
 
+func (p *Player) prompt() string {
+	return fmt.Sprintf(PROMPT, p.currHealth, p.maxHealth, p.currXp, p.xpTolevel)
+}
+
 func (p *Player) Send(msg string, a ...any) {
 	fmt.Fprintf(p, msg, a...)
-	fmt.Fprintln(p, "")
-	fmt.Fprintf(p, PROMPT, p.currHealth, p.maxHealth, p.currXp, p.xpTolevel)
+	fmt.Fprintf(p, "\n"+p.prompt())
+}
+
+func (p *Player) BufferMsg(msg string, a ...any) {
+	p.msgBuffer.WriteString(fmt.Sprintf(msg+"\n", a...))
+}
+
+func (p *Player) SendBufferedMsgs() {
+	if p.msgBuffer.Len() == 0 {
+		return
+	}
+	fmt.Fprint(p, "\n"+p.msgBuffer.String()+p.prompt())
+	p.msgBuffer.Reset()
 }
 
 func (p *Player) Tick() {
@@ -91,7 +108,7 @@ func (p *Player) SetLocation(l location) {
 
 func (p *Player) GainXp(xp int) {
 	p.currXp += xp
-	p.Send("You gain %d experience!", xp)
+	p.BufferMsg("You gain %d experience!", xp)
 	if p.currXp >= p.xpTolevel {
 		p.levelUp()
 	}
@@ -103,5 +120,5 @@ func xpToLevel(level int) int {
 
 func (p *Player) levelUp() {
 	p.xpTolevel = xpToLevel(p.level)
-	p.Send("PLACEHOLDER: You leveld up")
+	p.BufferMsg("PLACEHOLDER: You leveld up")
 }
