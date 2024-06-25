@@ -37,6 +37,7 @@ type Player struct {
 	level             int
 	HasActedThisRound bool
 	sync.Mutex
+	// TODO: Will eventually need a queued command for skills and spells, to go off on next combat round
 }
 
 func New(name string, r io.Reader, w io.Writer, exitCallback func()) *Player {
@@ -45,7 +46,7 @@ func New(name string, r io.Reader, w io.Writer, exitCallback func()) *Player {
 		Reader:       r,
 		Writer:       w,
 		exitCallback: exitCallback,
-		minDamage:    1,
+		minDamage:    3,
 		maxDamage:    8,
 		currHealth:   30,
 		maxHealth:    30,

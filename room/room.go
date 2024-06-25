@@ -78,7 +78,6 @@ func (r *Room) HandleKill(p *player.Player, mobName string) {
 }
 
 func (r *Room) Tick() {
-	slog.Info("Room ticking")
 	r.Lock()
 	defer r.Unlock()
 	defer r.updateDescription()

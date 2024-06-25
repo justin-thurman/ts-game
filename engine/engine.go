@@ -16,8 +16,7 @@ import (
 
 type server struct {
 	players    []*playerModule.Player
-	rooms      []*room.Room
-	mobs       []*mob.Mob
+	rooms      []*room.Room // TODO: Is this needed?; don't think so (eventually): on player login, get room by ID, add player to room
 	playerLock sync.RWMutex
 }
 
@@ -39,7 +38,7 @@ func (s *server) Connect(r io.Reader, w io.Writer, exitCallback func()) {
 	s.players = append(s.players, player)
 	s.playerLock.Unlock()
 	log.Info("User connected", "user", player.Name, "clientCount", len(s.players))
-	player.Send("Welcome to my very professional game, %s!\n", player.Name)
+	player.Send("Welcome to my very professional game, %s!", player.Name)
 	s.rooms[0].AddPlayer(player)
 	player.Send(player.Location().HandleLook())
 	go s.listenForCommands(player)
