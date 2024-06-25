@@ -67,7 +67,7 @@ mainLoop:
 		switch {
 		case cmd == "":
 			p.Send("")
-		case cmd == "exit" || cmd == "quit":
+		case strings.HasPrefix("quit", cmd):
 			// Logic handled below in order to also save users on disconnect
 			break mainLoop
 		case strings.HasPrefix("gossip", cmd):
