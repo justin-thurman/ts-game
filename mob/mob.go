@@ -20,12 +20,13 @@ type Mob struct {
 	maxDamage  int
 	currHealth int
 	maxHealth  int
+	xpValue    int
 	Dead       bool
 	sync.Mutex
 }
 
 func New(name string) *Mob {
-	return &Mob{Name: name, minDamage: 1, maxDamage: 3, currHealth: 10, maxHealth: 10}
+	return &Mob{Name: name, minDamage: 1, maxDamage: 3, currHealth: 10, maxHealth: 10, xpValue: 10}
 }
 
 func (m *Mob) TakeDamage(dam int) {
@@ -37,8 +38,12 @@ func (m *Mob) TakeDamage(dam int) {
 	}
 }
 
-func (m *Mob) GetDamage() int {
+func (m *Mob) Damage() int {
 	return randRange(m.minDamage, m.maxDamage)
+}
+
+func (m *Mob) XpValue() int {
+	return m.xpValue
 }
 
 func (m *Mob) Tick() {}

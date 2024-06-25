@@ -3,6 +3,7 @@ package player
 import (
 	"fmt"
 	"io"
+	"math"
 	"math/rand/v2"
 	"sync"
 	"ts-game/mob"
@@ -13,7 +14,7 @@ func randRange(min, max int) int {
 	return rand.IntN(max+1-min) + min
 }
 
-const PROMPT string = ">>> "
+const PROMPT string = "%d/%d HP %d/%d XP >>> "
 
 type location interface {
 	HandleLook() string
@@ -23,15 +24,18 @@ type location interface {
 type Player struct {
 	io.Reader
 	io.Writer
+	location location
+	sync.Mutex
 	exitCallback func()
 	Name         string
 	minDamage    int
 	maxDamage    int
 	currHealth   int
 	maxHealth    int
+	currXp       int
+	xpTolevel    int
+	level        int
 	inCombat     bool
-	location     location
-	sync.Mutex
 }
 
 func New(name string, r io.Reader, w io.Writer, exitCallback func()) *Player {
@@ -45,6 +49,8 @@ func New(name string, r io.Reader, w io.Writer, exitCallback func()) *Player {
 		currHealth:   30,
 		maxHealth:    30,
 		inCombat:     false,
+		level:        1,
+		xpTolevel:    xpToLevel(1),
 	}
 }
 
@@ -61,7 +67,7 @@ func (p *Player) save() {
 func (p *Player) Send(msg string, a ...any) {
 	fmt.Fprintf(p, msg, a...)
 	fmt.Fprintln(p, "")
-	fmt.Fprint(p, PROMPT)
+	fmt.Fprintf(p, PROMPT, p.currHealth, p.maxHealth, p.currXp, p.xpTolevel)
 }
 
 func (p *Player) Tick() {
@@ -76,7 +82,7 @@ func (p *Player) LeaveCombat() {
 	p.inCombat = false
 }
 
-func (p *Player) GetDamage() int {
+func (p *Player) Damage() int {
 	return randRange(p.minDamage, p.maxDamage)
 }
 
@@ -92,4 +98,21 @@ func (p *Player) Location() location {
 
 func (p *Player) SetLocation(l location) {
 	p.location = l
+}
+
+func (p *Player) GainXp(xp int) {
+	p.currXp += xp
+	p.Send("You gain %d experience!", xp)
+	if p.currXp >= p.xpTolevel {
+		p.levelUp()
+	}
+}
+
+func xpToLevel(level int) int {
+	return int(100 * math.Pow(float64(level), 1.5))
+}
+
+func (p *Player) levelUp() {
+	p.xpTolevel = xpToLevel(p.level)
+	p.Send("PLACEHOLDER: You leveld up")
 }

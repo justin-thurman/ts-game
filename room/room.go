@@ -76,13 +76,14 @@ func (r *Room) Tick() {
 			p.Tick()
 			continue
 		}
-		target := mobs[0] // TODO: player will need control over this later
-		damage := p.GetDamage()
+		target := mobs[0] // TODO: player will need control over this later; and AoE damage
+		damage := p.Damage()
 		target.TakeDamage(damage)
 		p.Send("You deal %d damage to %s!", damage, target.Name)
 		if target.Dead {
 			r.removeMob(target)
 			p.Send("You killed %s!", target.Name)
+			p.GainXp(target.XpValue())
 		}
 	}
 	// Handle mob rounds
@@ -93,7 +94,7 @@ func (r *Room) Tick() {
 			continue
 		}
 		target := players[0] // TODO: will need an aggro system later
-		damage := m.GetDamage()
+		damage := m.Damage()
 		target.TakeDamage(damage)
 		target.Send("%s dealt %d damage to you!", m.Name, damage)
 		// TODO: handle player death
