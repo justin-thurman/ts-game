@@ -131,11 +131,16 @@ func (r *Room) mobIsInRoom(m *mob.Mob) bool {
 
 func (r *Room) startCombat(p *player.Player, m *mob.Mob) {
 	if !p.HasActedThisRound {
+		p.HasActedThisRound = true
 		damage := p.Damage()
 		m.TakeDamage(damage)
-		// FIX: take into account mob might die; extract helper methods for player and mob rounds
 		p.BufferMsg("You deal %d damage to %s!", damage, m.Name)
-		p.HasActedThisRound = true
+		if m.Dead {
+			r.removeMob(m)
+			p.BufferMsg("You killed %s!", m.Name)
+			p.GainXp(m.XpValue())
+			return
+		}
 	}
 	r.players[p] = append(r.players[p], m)
 	r.mobs[m] = append(r.mobs[m], p)
