@@ -11,7 +11,7 @@ func main() {
 	server := engine.New()
 	// if len(os.Args) == 1 || os.Args[1] == "telnet" {
 	log.Info("Listening for TCP connections...")
-	listener, err := net.Listen("tcp", ":8081")
+	listener, err := net.Listen("tcp", ":8080")
 	if err != nil {
 		log.Error(err.Error())
 		os.Exit(1)
@@ -19,6 +19,7 @@ func main() {
 	go func() {
 		for {
 			conn, err := listener.Accept()
+			log.Info("Got connection")
 			if err != nil {
 				log.Error("Error accepting connection", "error", err.Error())
 				continue

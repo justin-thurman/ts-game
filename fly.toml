@@ -1,0 +1,26 @@
+# fly.toml app configuration file generated for ts-game on 2024-06-26T07:04:01-04:00
+#
+# See https://fly.io/docs/reference/configuration/ for information about how to use this file.
+#
+
+app = 'ts-game'
+primary_region = 'atl'
+
+[build]
+[build.args]
+GO_VERSION = '1.22.0'
+
+[env]
+PORT = '8080'
+
+[[services]]
+internal_port = 8080
+protocol = "tcp"
+min_machines_running = 1
+[[services.ports]]
+port = 8080
+
+[[vm]]
+memory = '1gb'
+cpu_kind = 'shared'
+cpus = 1

@@ -50,7 +50,6 @@ func (s *server) Start() error {
 	room.AddMob(starterMob)
 	s.rooms = append(s.rooms, room)
 	for {
-		log.Info("Server ticking")
 		for _, r := range s.rooms {
 			go r.Tick()
 		}
