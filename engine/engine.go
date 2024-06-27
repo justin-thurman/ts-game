@@ -45,6 +45,11 @@ func (s *server) Connect(r io.Reader, w io.Writer, exitCallback func()) {
 }
 
 func (s *server) Start() error {
+	err := room.Load()
+	if err != nil {
+		log.Info(err.Error())
+		return err
+	}
 	starterMob := mob.New("ant")
 	room := room.New("Town Center", "The center of town. Maybe there's an ant to kill!")
 	room.AddMob(starterMob)

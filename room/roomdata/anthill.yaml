@@ -1,0 +1,24 @@
+rooms:
+  - id: 6
+    zone: "anthill"
+    name: "Ant Hill Tunnel"
+    description: "You are in a narrow tunnel inside the ant hill. The walls are smooth and the air is humid."
+    exits:
+      up: 5
+      south: 7
+
+  - id: 7
+    zone: "anthill"
+    name: "Ant Hill Chamber"
+    description: "This chamber is spacious, with walls that glisten with moisture. You can hear the distant sounds of ants scurrying."
+    exits:
+      north: 6
+      east: 8
+
+  - id: 8
+    zone: "anthill"
+    name: "Ant Queen's Lair"
+    description: "You have entered the lair of the ant queen. The queen towers above, surrounded by worker ants."
+    exits:
+      west: 7
+
