@@ -45,6 +45,12 @@ func New(name, description string) *Room {
 	return room
 }
 
+func (r *Room) initialize() {
+	r.mobs = make(map[*mob.Mob][]*player.Player)
+	r.players = make(map[*player.Player][]*mob.Mob)
+	r.updateDescription()
+}
+
 func (r *Room) HandleLook() string {
 	return r.description
 }

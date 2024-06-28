@@ -39,25 +39,19 @@ func (s *server) Connect(r io.Reader, w io.Writer, exitCallback func()) {
 	s.playerLock.Unlock()
 	log.Info("User connected", "user", player.Name, "clientCount", len(s.players))
 	player.Send("Welcome to my very professional game, %s!", player.Name)
-	s.rooms[0].AddPlayer(player)
+	room.Rooms[0].AddPlayer(player)
 	player.Send(player.Location().HandleLook())
 	go s.listenForCommands(player)
 }
 
 func (s *server) Start() error {
-	zones, err := room.Load()
-	for _, z := range zones {
-		fmt.Printf("%+v\n", z)
-		for _, r := range z.Rooms {
-			fmt.Printf("%+v\n", r)
-		}
-	}
+	err := room.Load()
 	if err != nil {
 		log.Info(err.Error())
 		return err
 	}
 	starterMob := mob.New("ant")
-	room := room.New("Town Center", "The center of town. Maybe there's an ant to kill!")
+	room := room.Rooms[0]
 	room.AddMob(starterMob)
 	s.rooms = append(s.rooms, room)
 	for {

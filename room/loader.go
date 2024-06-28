@@ -10,32 +10,39 @@ import (
 //go:embed roomdata
 var roomdata embed.FS
 
-func Load() ([]Zone, error) {
+var (
+	Rooms []*Room
+	Zones []*Zone
+)
+
+func Load() error {
 	data, err := roomdata.ReadDir("roomdata")
 	if err != nil {
-		return nil, err
+		return err
 	}
-
-	var zones []Zone
 
 	for _, dirEntry := range data {
 		if dirEntry.IsDir() {
-			return nil, errors.New("room loader does not (yet) support nested directories inside roomdata")
+			return errors.New("room loader does not (yet) support nested directories inside roomdata")
 		}
 		fileInfo, err := dirEntry.Info()
 		if err != nil {
-			return nil, err
+			return err
 		}
 		data, err := roomdata.ReadFile("roomdata/" + fileInfo.Name())
 		if err != nil {
-			return nil, err
+			return err
 		}
 
 		var zone Zone
 		if err := yaml.Unmarshal(data, &zone); err != nil {
-			return nil, err
+			return err
 		}
-		zones = append(zones, zone)
+		Zones = append(Zones, &zone)
+		Rooms = append(Rooms, zone.Rooms...)
 	}
-	return zones, nil
+	for _, r := range Rooms {
+		r.initialize()
+	}
+	return nil
 }
