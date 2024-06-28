@@ -19,6 +19,8 @@ const PROMPT string = "%d/%d HP %d/%d XP >>> "
 type location interface {
 	HandleLook() string
 	HandleKill(*Player, string)
+	GetId() int
+	RemovePlayer(*Player)
 }
 
 type Player struct {
@@ -35,6 +37,7 @@ type Player struct {
 	currXp            int
 	xpTolevel         int
 	level             int
+	RoomId            int
 	HasActedThisRound bool
 	sync.Mutex
 	// TODO: Will eventually need a queued command for skills and spells, to go off on next combat round
@@ -51,12 +54,14 @@ func New(name string, r io.Reader, w io.Writer, exitCallback func()) *Player {
 		currHealth:   30,
 		maxHealth:    30,
 		level:        1,
+		RoomId:       1,
 		xpTolevel:    xpToLevel(1),
 	}
 }
 
 func (p *Player) Quit() {
 	p.save()
+	p.location.RemovePlayer(p)
 	p.Send("Goodbye, %s!\n", p.Name)
 	p.exitCallback()
 }
@@ -105,6 +110,7 @@ func (p *Player) Location() location {
 
 func (p *Player) SetLocation(l location) {
 	p.location = l
+	p.RoomId = l.GetId()
 }
 
 func (p *Player) GainXp(xp int) {

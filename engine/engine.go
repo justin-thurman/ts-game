@@ -16,7 +16,6 @@ import (
 
 type server struct {
 	players    []*playerModule.Player
-	rooms      []*room.Room // TODO: Is this needed?; don't think so (eventually): on player login, get room by ID, add player to room
 	playerLock sync.RWMutex
 }
 
@@ -39,7 +38,20 @@ func (s *server) Connect(r io.Reader, w io.Writer, exitCallback func()) {
 	s.playerLock.Unlock()
 	log.Info("User connected", "user", player.Name, "clientCount", len(s.players))
 	player.Send("Welcome to my very professional game, %s!", player.Name)
-	room.Rooms[0].AddPlayer(player)
+	var playerRoom *room.Room
+	var err error
+	playerRoom, err = room.FindRoomById(player.RoomId)
+	if err != nil {
+		log.Error("Player saved to invalid room", "player", player.Name, "roomId", player.RoomId)
+		playerRoom, err = room.FindRoomById(1)
+		if err != nil {
+			log.Error("Room 1 not found during player login", "player", player.Name)
+			player.Send("Internal server error")
+			exitCallback()
+			return
+		}
+	}
+	playerRoom.AddPlayer(player)
 	player.Send(player.Location().HandleLook())
 	go s.listenForCommands(player)
 }
@@ -51,14 +63,13 @@ func (s *server) Start() error {
 		return err
 	}
 	starterMob := mob.New("ant")
-	room := room.Rooms[0]
-	room.AddMob(starterMob)
-	s.rooms = append(s.rooms, room)
+	townCenter := room.Rooms[0]
+	townCenter.AddMob(starterMob)
 	for {
-		for _, r := range s.rooms {
+		for _, r := range room.Rooms {
 			go r.Tick()
 		}
-		time.Sleep(time.Second * 6)
+		time.Sleep(time.Second * 4)
 	}
 }
 

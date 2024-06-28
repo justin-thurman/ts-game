@@ -1,8 +1,11 @@
 package room
 
 import (
+	"cmp"
 	"embed"
 	"errors"
+	"fmt"
+	"slices"
 
 	"gopkg.in/yaml.v3"
 )
@@ -41,8 +44,25 @@ func Load() error {
 		Zones = append(Zones, &zone)
 		Rooms = append(Rooms, zone.Rooms...)
 	}
+	slices.SortFunc(Rooms, func(a, b *Room) int {
+		return cmp.Compare(a.Id, b.Id)
+	})
+	slices.SortFunc(Zones, func(a, b *Zone) int {
+		return cmp.Compare(a.Name, b.Name)
+	})
 	for _, r := range Rooms {
 		r.initialize()
 	}
 	return nil
+}
+
+func FindRoomById(id int) (*Room, error) {
+	target := &Room{Id: id}
+	idx, found := slices.BinarySearchFunc(Rooms, target, func(a, b *Room) int {
+		return cmp.Compare(a.Id, b.Id)
+	})
+	if !found {
+		return nil, fmt.Errorf("room with ID %d not found", id)
+	}
+	return Rooms[idx], nil
 }

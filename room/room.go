@@ -26,7 +26,7 @@ const (
 type Room struct {
 	players         map[*player.Player][]*mob.Mob
 	mobs            map[*mob.Mob][]*player.Player // similar map of mobs to players
-	exits           map[direction]int             `yaml:"exits"`
+	Exits           map[direction]int             `yaml:"exits"`
 	description     string
 	DescriptionBase string `yaml:"description"`
 	Name            string `yaml:"name"`
@@ -49,6 +49,10 @@ func (r *Room) initialize() {
 	r.mobs = make(map[*mob.Mob][]*player.Player)
 	r.players = make(map[*player.Player][]*mob.Mob)
 	r.updateDescription()
+}
+
+func (r *Room) GetId() int {
+	return r.Id
 }
 
 func (r *Room) HandleLook() string {
@@ -184,6 +188,20 @@ func (r *Room) AddMob(m *mob.Mob) {
 	defer r.Unlock()
 	defer r.updateDescription()
 	r.mobs[m] = []*player.Player{}
+}
+
+func (r *Room) RemovePlayer(p *player.Player) {
+	r.Lock()
+	defer r.Unlock()
+	delete(r.players, p)
+	for m, players := range r.mobs {
+		for i, fightingPlayer := range players {
+			if fightingPlayer == p {
+				r.mobs[m] = slices.Delete(players, i, i+1)
+				break
+			}
+		}
+	}
 }
 
 func (r *Room) AddPlayer(p *player.Player) {
