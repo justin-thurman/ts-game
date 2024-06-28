@@ -2,7 +2,7 @@ package room
 
 import (
 	"embed"
-	"log"
+	"errors"
 
 	"gopkg.in/yaml.v3"
 )
@@ -10,19 +10,32 @@ import (
 //go:embed roomdata
 var roomdata embed.FS
 
-var Rooms []*Room
-
-func Load() error {
-	log.Println(roomdata)
-	data, err := roomdata.ReadFile("roomdata/newbietown.yaml")
+func Load() ([]Zone, error) {
+	data, err := roomdata.ReadDir("roomdata")
 	if err != nil {
-		return err
+		return nil, err
 	}
-	if err := yaml.Unmarshal(data, Rooms); err != nil {
-		return err
+
+	var zones []Zone
+
+	for _, dirEntry := range data {
+		if dirEntry.IsDir() {
+			return nil, errors.New("room loader does not (yet) support nested directories inside roomdata")
+		}
+		fileInfo, err := dirEntry.Info()
+		if err != nil {
+			return nil, err
+		}
+		data, err := roomdata.ReadFile("roomdata/" + fileInfo.Name())
+		if err != nil {
+			return nil, err
+		}
+
+		var zone Zone
+		if err := yaml.Unmarshal(data, &zone); err != nil {
+			return nil, err
+		}
+		zones = append(zones, zone)
 	}
-	for _, r := range Rooms {
-		log.Printf("Room name: %s", r.name)
-	}
-	return nil
+	return zones, nil
 }

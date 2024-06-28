@@ -1,13 +1,12 @@
+zone: "newbietown"
 rooms:
   - id: 1
-    zone: "newbietown"
     name: "Town Center"
     description: "You are standing in the bustling town center. Shops and stalls line the streets, and townsfolk go about their business."
     exits:
       east: 2
 
   - id: 2
-    zone: "newbietown"
     name: "East Path"
     description: "You are on a path leading out of town. The cobblestones here are worn and old."
     exits:
@@ -15,7 +14,6 @@ rooms:
       south: 3
 
   - id: 3
-    zone: "newbietown"
     name: "South Path"
     description: "The path continues south. The sounds of the town are fading behind you."
     exits:
@@ -23,7 +21,6 @@ rooms:
       south: 4
 
   - id: 4
-    zone: "newbietown"
     name: "Deep South Path"
     description: "The path is quiet and less traveled here. You feel a sense of unease."
     exits:
@@ -31,7 +28,6 @@ rooms:
       down: 5
 
   - id: 5
-    zone: "Ant Hill"
     name: "Ant Hill Entrance"
     description: "You are standing at the entrance of a giant ant hill. The air is thick with the scent of earth."
     exits:

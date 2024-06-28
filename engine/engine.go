@@ -45,7 +45,13 @@ func (s *server) Connect(r io.Reader, w io.Writer, exitCallback func()) {
 }
 
 func (s *server) Start() error {
-	err := room.Load()
+	zones, err := room.Load()
+	for _, z := range zones {
+		fmt.Printf("%+v\n", z)
+		for _, r := range z.Rooms {
+			fmt.Printf("%+v\n", r)
+		}
+	}
 	if err != nil {
 		log.Info(err.Error())
 		return err

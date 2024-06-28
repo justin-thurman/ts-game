@@ -28,17 +28,16 @@ type Room struct {
 	mobs            map[*mob.Mob][]*player.Player // similar map of mobs to players
 	exits           map[direction]int             `yaml:"exits"`
 	description     string
-	descriptionBase string `yaml:"description"`
-	name            string `yaml:"name"`
-	zone            string `yaml:"zone"`
-	id              int    `yaml:"id"`
+	DescriptionBase string `yaml:"description"`
+	Name            string `yaml:"name"`
+	Id              int    `yaml:"id"`
 	sync.Mutex
 }
 
 func New(name, description string) *Room {
 	room := &Room{
-		name:            name,
-		descriptionBase: description,
+		Name:            name,
+		DescriptionBase: description,
 		mobs:            make(map[*mob.Mob][]*player.Player),
 		players:         make(map[*player.Player][]*mob.Mob),
 	}
@@ -51,7 +50,7 @@ func (r *Room) HandleLook() string {
 }
 
 func (r *Room) updateDescription() {
-	nameAndDescription := fmt.Sprintf("%s\n%s", r.name, r.descriptionBase)
+	nameAndDescription := fmt.Sprintf("%s\n%s", r.Name, r.DescriptionBase)
 	descList := []string{nameAndDescription}
 	for m, players := range r.mobs {
 		var s string
