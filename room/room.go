@@ -71,6 +71,15 @@ func (r *Room) updateDescription() {
 		}
 		descList = append(descList, s)
 	}
+	if len(r.Exits) == 0 {
+		descList = append(descList, "Exits: None")
+	} else {
+		exitStrs := []string{"Exits:"}
+		for exit := range r.Exits {
+			exitStrs = append(exitStrs, string(exit))
+		}
+		descList = append(descList, strings.Join(exitStrs, " "))
+	}
 	r.description = strings.Join(descList, "\n")
 }
 
