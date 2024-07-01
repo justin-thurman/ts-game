@@ -21,6 +21,7 @@ type location interface {
 	HandleKill(*Player, string)
 	GetId() int
 	RemovePlayer(*Player)
+	HandleMovement(*Player, string)
 }
 
 type Player struct {

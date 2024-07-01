@@ -18,7 +18,9 @@ const (
 	invalid direction = "invalid"
 )
 
-func parseMovementDirection(s string) direction {
+// Parses a string, returning a movement direction and a boolean indicating whether the direction
+// parsed successfully.
+func ParseMovementDirection(s string) direction {
 	s = strings.TrimSpace(s)
 	switch {
 	case strings.HasPrefix(string(north), s):
@@ -39,7 +41,7 @@ func parseMovementDirection(s string) direction {
 }
 
 func (r *Room) HandleMovement(player *player.Player, direction string) {
-	dir := parseMovementDirection(direction)
+	dir := ParseMovementDirection(direction)
 	if dir == invalid {
 		player.Send("Go where?")
 		return

@@ -81,6 +81,18 @@ mainLoop:
 		switch {
 		case cmd == "":
 			p.Send("")
+		case strings.HasPrefix("north", cmd):
+			p.Location().HandleMovement(p, cmd)
+		case strings.HasPrefix("south", cmd):
+			p.Location().HandleMovement(p, cmd)
+		case strings.HasPrefix("east", cmd):
+			p.Location().HandleMovement(p, cmd)
+		case strings.HasPrefix("west", cmd):
+			p.Location().HandleMovement(p, cmd)
+		case strings.HasPrefix("up", cmd):
+			p.Location().HandleMovement(p, cmd)
+		case strings.HasPrefix("down", cmd):
+			p.Location().HandleMovement(p, cmd)
 		case strings.HasPrefix("quit", cmd):
 			// Logic handled below in order to also save users on disconnect
 			break mainLoop
