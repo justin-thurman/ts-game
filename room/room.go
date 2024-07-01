@@ -12,17 +12,6 @@ import (
 	_ "gopkg.in/yaml.v3"
 )
 
-type direction string
-
-const (
-	north direction = "north"
-	south direction = "south"
-	east  direction = "east"
-	west  direction = "west"
-	up    direction = "up"
-	down  direction = "down"
-)
-
 type Room struct {
 	players         map[*player.Player][]*mob.Mob
 	mobs            map[*mob.Mob][]*player.Player // similar map of mobs to players
