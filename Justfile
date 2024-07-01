@@ -26,3 +26,5 @@ roomid:
 
   echo "Largest ID value: $max_id"
 
+test:
+  go test -v ./engine
