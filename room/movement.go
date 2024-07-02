@@ -41,6 +41,10 @@ func ParseMovementDirection(s string) direction {
 }
 
 func (r *Room) HandleMovement(player *player.Player, direction string) {
+	if r.PlayerIsInCombat(player) {
+		player.Send("You're too busy fighting for your life!")
+		return
+	}
 	dir := ParseMovementDirection(direction)
 	if dir == invalid {
 		player.Send("Go where?")

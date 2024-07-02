@@ -94,6 +94,16 @@ mainLoop:
 		case strings.HasPrefix("down", cmd):
 			p.Location().HandleMovement(p, cmd)
 		case strings.HasPrefix("quit", cmd):
+			playerRoom, err := room.FindRoomById(p.RoomId)
+			if err != nil {
+				log.Error("Player room not found during quit", "player", p.Name, "roomId", p.RoomId)
+				p.Send("Internal server error during quit. Try again in a few moments.")
+				break
+			}
+			if playerRoom.PlayerIsInCombat(p) {
+				p.Send("You can't quit now. You're fighting for your life!")
+				break
+			}
 			// Logic handled below in order to also save users on disconnect
 			break mainLoop
 		case strings.HasPrefix("gossip", cmd):

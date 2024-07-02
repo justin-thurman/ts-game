@@ -147,6 +147,17 @@ func (r *Room) playerIsInRoom(p *player.Player) bool {
 	return found
 }
 
+func (r *Room) PlayerIsInCombat(p *player.Player) bool {
+	r.Lock()
+	defer r.Unlock()
+	mobs, found := r.players[p]
+	if !found {
+		slog.Error("Player not found in room when checking if player is in combat", "player", p.Name, "roomId", r.Id)
+		return false
+	}
+	return len(mobs) > 0
+}
+
 func (r *Room) mobIsInRoom(m *mob.Mob) bool {
 	_, found := r.mobs[m]
 	return found
