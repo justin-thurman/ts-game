@@ -28,7 +28,7 @@ func (z *Zone) shouldSpawnMob() bool {
 	if z.MobCap == 0 || len(z.Spawns) == 0 || len(z.Rooms) == 0 {
 		return false
 	}
-	maxMobSpawnProbability := 0.25
+	maxMobSpawnProbability := 0.25 // this results in approximately 16% spawn chance per tick if zone is empty
 	spawnProbability := maxMobSpawnProbability * (1 - math.Exp(float64(-(z.MobCap-z.currMobCount)/z.MobCap)))
 	return rand.Float64() < spawnProbability
 }
