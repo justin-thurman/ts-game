@@ -69,6 +69,9 @@ func (s *server) Start() error {
 		for _, r := range room.Rooms {
 			go r.Tick()
 		}
+		for _, z := range room.Zones {
+			go z.Tick()
+		}
 		time.Sleep(time.Second * 4)
 	}
 }

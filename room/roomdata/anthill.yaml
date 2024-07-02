@@ -1,4 +1,15 @@
 zone: "anthill"
+mobCap: 8
+mobs:
+  - name: "A worker ant"
+    targetingNames:
+      - "worker"
+      - "ant"
+    idleDescription: "A worker ant is standing here, shuffling about its tasks."
+    minDamage: 1
+    maxDamage: 3
+    health: 10
+    xpValue: 10
 rooms:
   - id: 6
     name: "Ant Hill Tunnel"
