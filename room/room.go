@@ -54,7 +54,7 @@ func (r *Room) updateDescription() {
 	for m, players := range r.mobs {
 		var s string
 		if len(players) == 0 {
-			s = fmt.Sprintf("%s is standing here.", m.Name)
+			s = m.IdleDescription
 		} else {
 			s = fmt.Sprintf("%s is fighting for its life!", m.Name)
 		}
@@ -73,6 +73,7 @@ func (r *Room) updateDescription() {
 }
 
 func (r *Room) HandleKill(p *player.Player, mobName string) {
+	mobName = strings.ToLower(mobName)
 	r.Lock()
 	defer r.Unlock()
 	if !r.playerIsInRoom(p) {
@@ -80,10 +81,16 @@ func (r *Room) HandleKill(p *player.Player, mobName string) {
 		return
 	}
 	var target *mob.Mob
+outerLoop:
 	for tar := range r.mobs {
-		if tar != nil && strings.HasPrefix(tar.Name, mobName) {
-			target = tar
-			break
+		if tar == nil {
+			continue
+		}
+		for _, tarName := range tar.TargetingNames {
+			if strings.HasPrefix(tarName, mobName) {
+				target = tar
+				break outerLoop
+			}
 		}
 	}
 	if target == nil {

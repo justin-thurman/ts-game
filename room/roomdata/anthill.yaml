@@ -1,7 +1,7 @@
 zone: "anthill"
 mobCap: 8
 mobs:
-  - name: "A worker ant"
+  - name: "a worker ant"
     targetingNames:
       - "worker"
       - "ant"

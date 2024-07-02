@@ -14,37 +14,40 @@ func randRange(min, max int) int {
 
 // The template that an individual mob is spawned from
 type MobInfo struct {
-	Name           string   `yaml:"name"`
-	TargetingNames []string `yaml:"targetingNames"`
-	MinDamage      int      `yaml:"minDamage"`
-	MaxDamage      int      `yaml:"maxDamage"`
-	MaxHealth      int      `yaml:"health"`
-	XpValue        int      `yaml:"xpValue"`
+	Name            string   `yaml:"name"`
+	IdleDescription string   `yaml:"idleDescription"`
+	TargetingNames  []string `yaml:"targetingNames"`
+	MinDamage       int      `yaml:"minDamage"`
+	MaxDamage       int      `yaml:"maxDamage"`
+	MaxHealth       int      `yaml:"health"`
+	XpValue         int      `yaml:"xpValue"`
 }
 
 // Creates a Mob from a MobInfo instance
 func (m *MobInfo) Spawn() Mob {
 	return Mob{
-		Name:           m.Name,
-		TargetingNames: m.TargetingNames,
-		minDamage:      m.MinDamage,
-		maxDamage:      m.MaxDamage,
-		currHealth:     m.MaxHealth,
-		maxHealth:      m.MaxHealth,
-		xpValue:        m.XpValue,
+		Name:            m.Name,
+		IdleDescription: m.IdleDescription,
+		TargetingNames:  m.TargetingNames,
+		minDamage:       m.MinDamage,
+		maxDamage:       m.MaxDamage,
+		currHealth:      m.MaxHealth,
+		maxHealth:       m.MaxHealth,
+		xpValue:         m.XpValue,
 	}
 }
 
 // An individual mob spawn
 type Mob struct {
-	Name           string
-	TargetingNames []string
-	minDamage      int
-	maxDamage      int
-	currHealth     int
-	maxHealth      int
-	xpValue        int
-	Dead           bool
+	Name            string
+	IdleDescription string
+	TargetingNames  []string
+	minDamage       int
+	maxDamage       int
+	currHealth      int
+	maxHealth       int
+	xpValue         int
+	Dead            bool
 	sync.Mutex
 }
 
