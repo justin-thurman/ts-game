@@ -25,6 +25,7 @@ func TestServerRuns(t *testing.T) {
 		time.Sleep(time.Millisecond * 10)
 	}
 	server.Connect(r, w, func() {})
+	time.Sleep(time.Millisecond * 10)
 
 	w.Flush()
 

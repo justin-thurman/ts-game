@@ -52,7 +52,6 @@ func (s *server) Connect(r io.Reader, w io.Writer, exitCallback func()) {
 		}
 	}
 	playerRoom.AddPlayer(player)
-	player.Send(player.Location().HandleLook())
 	go s.listenForCommands(player)
 }
 

@@ -17,6 +17,7 @@ type Room struct {
 	players         map[*player.Player][]*mob.Mob
 	mobs            map[*mob.Mob][]*player.Player // similar map of mobs to players
 	Exits           map[direction]int             `yaml:"exits"`
+	incomingPlayers chan *player.Player
 	description     string
 	DescriptionBase string `yaml:"description"`
 	Name            string `yaml:"name"`
@@ -38,7 +39,9 @@ func New(name, description string) *Room {
 func (r *Room) initialize() {
 	r.mobs = make(map[*mob.Mob][]*player.Player)
 	r.players = make(map[*player.Player][]*mob.Mob)
+	r.incomingPlayers = make(chan *player.Player)
 	r.updateDescription()
+	go r.listenForIncomingPlayers()
 }
 
 func (r *Room) GetId() int {
@@ -213,7 +216,7 @@ func (r *Room) AddMob(m *mob.Mob) {
 	r.mobs[m] = []*player.Player{}
 }
 
-func (r *Room) removePlayer(p *player.Player) {
+func (r *Room) RemovePlayer(p *player.Player) {
 	r.Lock()
 	defer r.Unlock()
 	delete(r.players, p)
@@ -228,9 +231,22 @@ func (r *Room) removePlayer(p *player.Player) {
 }
 
 func (r *Room) AddPlayer(p *player.Player) {
+	r.incomingPlayers <- p
+}
+
+func (r *Room) addPlayer(p *player.Player) {
 	r.Lock()
 	defer r.Unlock()
 	defer r.updateDescription()
 	r.players[p] = []*mob.Mob{}
 	p.SetLocation(r)
+}
+
+func (r *Room) listenForIncomingPlayers() {
+	slog.Debug("Begin listen for incoming players", "room", r.Id)
+	for p := range r.incomingPlayers {
+		slog.Debug("Incoming player", "player", p.Name, "room", r.Id)
+		r.addPlayer(p)
+	}
+	slog.Debug("End listen for incoming players", "room", r.Id)
 }

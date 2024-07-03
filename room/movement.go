@@ -73,7 +73,7 @@ func (r *Room) movePlayer(p *player.Player, destId int) {
 		p.Send("Internal server error finding room")
 		return
 	}
-	r.removePlayer(p)
+	r.RemovePlayer(p)
 	dest.AddPlayer(p)
 	p.Send(dest.HandleLook())
 }

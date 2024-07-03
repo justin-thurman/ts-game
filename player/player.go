@@ -22,7 +22,7 @@ type location interface {
 	GetId() int
 	HandleMovement(*Player, string)
 	HandleRecall(*Player, int)
-	HandleQuit(*Player)
+	RemovePlayer(*Player)
 }
 
 type Player struct {
@@ -65,7 +65,9 @@ func New(name string, r io.Reader, w io.Writer, exitCallback func()) *Player {
 
 func (p *Player) Quit() {
 	p.save()
-	p.location.HandleQuit(p)
+	if p.location != nil {
+		p.location.RemovePlayer(p)
+	}
 	p.Send("Goodbye, %s!\n", p.Name)
 	p.exitCallback()
 }
@@ -130,6 +132,7 @@ func (p *Player) Location() location {
 func (p *Player) SetLocation(l location) {
 	p.location = l
 	p.RoomId = l.GetId()
+	p.Send(l.HandleLook())
 }
 
 func (p *Player) GainXp(xp int) {
