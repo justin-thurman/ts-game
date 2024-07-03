@@ -147,7 +147,11 @@ func (r *Room) Tick() {
 		damage := m.Damage()
 		target.TakeDamage(damage)
 		target.BufferMsg("%s dealt %d damage to you!", m.Name, damage)
-		// TODO: handle player death
+		if target.CurrHealth <= 0 {
+			target.Death()
+			target.BufferMsg("You died!")
+			r.movePlayer(target, target.RecallRoomId)
+		}
 	}
 }
 
@@ -209,7 +213,7 @@ func (r *Room) AddMob(m *mob.Mob) {
 	r.mobs[m] = []*player.Player{}
 }
 
-func (r *Room) RemovePlayer(p *player.Player) {
+func (r *Room) removePlayer(p *player.Player) {
 	r.Lock()
 	defer r.Unlock()
 	delete(r.players, p)

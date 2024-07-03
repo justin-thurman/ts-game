@@ -20,9 +20,9 @@ type location interface {
 	HandleLook() string
 	HandleKill(*Player, string)
 	GetId() int
-	RemovePlayer(*Player)
 	HandleMovement(*Player, string)
 	HandleRecall(*Player, int)
+	HandleQuit(*Player)
 }
 
 type Player struct {
@@ -34,8 +34,8 @@ type Player struct {
 	Name              string
 	minDamage         int
 	maxDamage         int
-	currHealth        int
-	maxHealth         int
+	CurrHealth        int
+	MaxHealth         int
 	currXp            int
 	xpTolevel         int
 	level             int
@@ -54,8 +54,8 @@ func New(name string, r io.Reader, w io.Writer, exitCallback func()) *Player {
 		exitCallback: exitCallback,
 		minDamage:    3,
 		maxDamage:    8,
-		currHealth:   30,
-		maxHealth:    30,
+		CurrHealth:   10,
+		MaxHealth:    30,
 		level:        1,
 		RoomId:       1,
 		RecallRoomId: 1,
@@ -65,7 +65,7 @@ func New(name string, r io.Reader, w io.Writer, exitCallback func()) *Player {
 
 func (p *Player) Quit() {
 	p.save()
-	p.location.RemovePlayer(p)
+	p.location.HandleQuit(p)
 	p.Send("Goodbye, %s!\n", p.Name)
 	p.exitCallback()
 }
@@ -78,12 +78,19 @@ func (p *Player) Recall() {
 	p.location.HandleRecall(p, p.RecallRoomId)
 }
 
+func (p *Player) Death() {
+	p.Lock()
+	defer p.Unlock()
+	p.currXp = p.currXp / 2
+	p.CurrHealth = p.MaxHealth
+}
+
 func (p *Player) save() {
 	p.Send("If we had persistence, we'd be saving your character now.")
 }
 
 func (p *Player) prompt() string {
-	return fmt.Sprintf(PROMPT, p.currHealth, p.maxHealth, p.currXp, p.xpTolevel)
+	return fmt.Sprintf(PROMPT, p.CurrHealth, p.MaxHealth, p.currXp, p.xpTolevel)
 }
 
 func (p *Player) Send(msg string, a ...any) {
@@ -113,7 +120,7 @@ func (p *Player) Damage() int {
 func (p *Player) TakeDamage(damage int) {
 	p.Lock()
 	defer p.Unlock()
-	p.currHealth -= damage
+	p.CurrHealth -= damage
 }
 
 func (p *Player) Location() location {
