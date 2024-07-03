@@ -22,6 +22,7 @@ type location interface {
 	GetId() int
 	RemovePlayer(*Player)
 	HandleMovement(*Player, string)
+	HandleRecall(*Player, int)
 }
 
 type Player struct {
@@ -39,6 +40,7 @@ type Player struct {
 	xpTolevel         int
 	level             int
 	RoomId            int
+	RecallRoomId      int
 	HasActedThisRound bool
 	sync.Mutex
 	// TODO: Will eventually need a queued command for skills and spells, to go off on next combat round
@@ -56,6 +58,7 @@ func New(name string, r io.Reader, w io.Writer, exitCallback func()) *Player {
 		maxHealth:    30,
 		level:        1,
 		RoomId:       1,
+		RecallRoomId: 1,
 		xpTolevel:    xpToLevel(1),
 	}
 }
@@ -65,6 +68,14 @@ func (p *Player) Quit() {
 	p.location.RemovePlayer(p)
 	p.Send("Goodbye, %s!\n", p.Name)
 	p.exitCallback()
+}
+
+func (p *Player) Recall() {
+	if p.RoomId == p.RecallRoomId {
+		p.Send("You are already at your recall point.")
+		return
+	}
+	p.location.HandleRecall(p, p.RecallRoomId)
 }
 
 func (p *Player) save() {

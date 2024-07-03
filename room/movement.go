@@ -40,27 +40,40 @@ func ParseMovementDirection(s string) direction {
 	}
 }
 
-func (r *Room) HandleMovement(player *player.Player, direction string) {
-	if r.PlayerIsInCombat(player) {
-		player.Send("You're too busy fighting for your life!")
+func (r *Room) HandleMovement(p *player.Player, direction string) {
+	if r.PlayerIsInCombat(p) {
+		p.Send("You're too busy fighting for your life!")
 		return
 	}
 	dir := ParseMovementDirection(direction)
 	if dir == invalid {
-		player.Send("Go where?")
+		p.Send("Go where?")
 		return
 	}
 	destId, found := r.Exits[dir]
 	if !found {
-		player.Send("You can't go %s.", string(dir))
+		p.Send("You can't go %s.", string(dir))
 		return
 	}
+	r.movePlayer(p, destId)
+}
+
+func (r *Room) HandleRecall(p *player.Player, destinationId int) {
+	if r.PlayerIsInCombat(p) {
+		p.Send("You're too busy fighting for your life!")
+		return
+	}
+	r.movePlayer(p, destinationId)
+}
+
+func (r *Room) movePlayer(p *player.Player, destId int) {
 	dest, err := FindRoomById(destId)
 	if err != nil {
-		slog.Error("Error finding room during player movement", "player", player.Name, "startingRoom", r.Id, "destinationRoom", destId)
-		player.Send("Internal server error finding room")
+		slog.Error("Error finding room during player movement", "player", p.Name, "startingRoom", r.Id, "destinationRoom", destId)
+		p.Send("Internal server error finding room")
+		return
 	}
-	r.RemovePlayer(player)
-	dest.AddPlayer(player)
-	player.Send(dest.HandleLook())
+	r.RemovePlayer(p)
+	dest.AddPlayer(p)
+	p.Send(dest.HandleLook())
 }

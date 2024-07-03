@@ -96,6 +96,8 @@ mainLoop:
 			p.Location().HandleMovement(p, cmd)
 		case strings.HasPrefix("down", cmd):
 			p.Location().HandleMovement(p, cmd)
+		case strings.HasPrefix("recall", cmd):
+			p.Recall()
 		case strings.HasPrefix("quit", cmd):
 			playerRoom, err := room.FindRoomById(p.RoomId)
 			if err != nil {
