@@ -43,6 +43,9 @@ func Load() error {
 		}
 		Zones = append(Zones, &zone)
 		Rooms = append(Rooms, zone.Rooms...)
+		for _, r := range zone.Rooms {
+			r.zone = &zone
+		}
 	}
 	slices.SortFunc(Rooms, func(a, b *Room) int {
 		return cmp.Compare(a.Id, b.Id)
@@ -52,6 +55,9 @@ func Load() error {
 	})
 	for _, r := range Rooms {
 		r.initialize()
+	}
+	for _, z := range Zones {
+		z.initialize()
 	}
 	return nil
 }

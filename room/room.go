@@ -13,6 +13,7 @@ import (
 )
 
 type Room struct {
+	zone            *Zone
 	players         map[*player.Player][]*mob.Mob
 	mobs            map[*mob.Mob][]*player.Player // similar map of mobs to players
 	Exits           map[direction]int             `yaml:"exits"`
@@ -127,7 +128,8 @@ func (r *Room) Tick() {
 		damage := p.Damage()
 		target.TakeDamage(damage)
 		p.BufferMsg("You deal %d damage to %s!", damage, target.Name)
-		if target.Dead {
+		if target.Dead { // TODO: extract this?
+			r.zone.handleMobDeath()
 			r.removeMob(target)
 			p.BufferMsg("You killed %s!", target.Name)
 			p.GainXp(target.XpValue())
@@ -177,6 +179,7 @@ func (r *Room) startCombat(p *player.Player, m *mob.Mob) {
 		m.TakeDamage(damage)
 		p.BufferMsg("You deal %d damage to %s!", damage, m.Name)
 		if m.Dead {
+			r.zone.handleMobDeath()
 			r.removeMob(m)
 			p.BufferMsg("You killed %s!", m.Name)
 			p.GainXp(m.XpValue())
