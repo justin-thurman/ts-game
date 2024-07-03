@@ -1,8 +1,8 @@
 deploy:
   fly deploy --ha=false
 
-run:
-  go run .
+run *FLAGS:
+  go run . {{FLAGS}}
 
 local:
   telnet 127.0.0.1 8080
