@@ -79,26 +79,26 @@ func (s *server) listenForCommands(p *playerModule.Player) {
 	scanner := bufio.NewScanner(p)
 mainLoop:
 	for scanner.Scan() {
+		playerRoom, err := room.FindRoomById(p.RoomId)
 		cmd, cmdArgs, _ := strings.Cut(scanner.Text(), " ")
 		switch {
 		case cmd == "":
 			p.Send("")
 		case strings.HasPrefix("north", cmd):
-			p.Location().HandleMovement(p, cmd)
+			playerRoom.HandleMovement(p, cmd)
 		case strings.HasPrefix("south", cmd):
-			p.Location().HandleMovement(p, cmd)
+			playerRoom.HandleMovement(p, cmd)
 		case strings.HasPrefix("east", cmd):
-			p.Location().HandleMovement(p, cmd)
+			playerRoom.HandleMovement(p, cmd)
 		case strings.HasPrefix("west", cmd):
-			p.Location().HandleMovement(p, cmd)
+			playerRoom.HandleMovement(p, cmd)
 		case strings.HasPrefix("up", cmd):
-			p.Location().HandleMovement(p, cmd)
+			playerRoom.HandleMovement(p, cmd)
 		case strings.HasPrefix("down", cmd):
-			p.Location().HandleMovement(p, cmd)
+			playerRoom.HandleMovement(p, cmd)
 		case strings.HasPrefix("recall", cmd):
 			p.Recall()
 		case strings.HasPrefix("quit", cmd):
-			playerRoom, err := room.FindRoomById(p.RoomId)
 			if err != nil {
 				log.Error("Player room not found during quit", "player", p.Name, "roomId", p.RoomId)
 				p.Send("Internal server error during quit. Try again in a few moments.")

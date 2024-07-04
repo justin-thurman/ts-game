@@ -5,6 +5,7 @@ import (
 	"embed"
 	"errors"
 	"fmt"
+	"log/slog"
 	"slices"
 
 	"gopkg.in/yaml.v3"
@@ -63,6 +64,16 @@ func Load() error {
 }
 
 func FindRoomById(id int) (*Room, error) {
+	expectedRoomIdx := id - 1 // Room IDs start at 1
+	if expectedRoomIdx >= len(Rooms) {
+		return nil, fmt.Errorf("room ID %d outside bounds of Rooms array", id)
+	}
+	targetRoom := Rooms[expectedRoomIdx]
+	if targetRoom.Id == id {
+		return targetRoom, nil
+	}
+	slog.Error("Room idx in Rooms array does not match room id", "searchedForId", id, "foundRoomId", targetRoom.Id)
+	// Fall back to a binary search
 	target := &Room{Id: id}
 	idx, found := slices.BinarySearchFunc(Rooms, target, func(a, b *Room) int {
 		return cmp.Compare(a.Id, b.Id)

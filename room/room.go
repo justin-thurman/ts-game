@@ -25,17 +25,6 @@ type Room struct {
 	sync.Mutex
 }
 
-func New(name, description string) *Room {
-	room := &Room{
-		Name:            name,
-		DescriptionBase: description,
-		mobs:            make(map[*mob.Mob][]*player.Player),
-		players:         make(map[*player.Player][]*mob.Mob),
-	}
-	room.updateDescription()
-	return room
-}
-
 func (r *Room) initialize() {
 	r.mobs = make(map[*mob.Mob][]*player.Player)
 	r.players = make(map[*player.Player][]*mob.Mob)
@@ -240,6 +229,7 @@ func (r *Room) addPlayer(p *player.Player) {
 	defer r.updateDescription()
 	r.players[p] = []*mob.Mob{}
 	p.SetLocation(r)
+	p.Send(r.HandleLook())
 }
 
 func (r *Room) listenForIncomingPlayers() {

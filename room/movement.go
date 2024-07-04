@@ -75,5 +75,4 @@ func (r *Room) movePlayer(p *player.Player, destId int) {
 	}
 	r.RemovePlayer(p)
 	dest.AddPlayer(p)
-	p.Send(dest.HandleLook())
 }

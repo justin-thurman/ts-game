@@ -20,7 +20,6 @@ type location interface {
 	HandleLook() string
 	HandleKill(*Player, string)
 	GetId() int
-	HandleMovement(*Player, string)
 	HandleRecall(*Player, int)
 	RemovePlayer(*Player)
 }
@@ -132,7 +131,6 @@ func (p *Player) Location() location {
 func (p *Player) SetLocation(l location) {
 	p.location = l
 	p.RoomId = l.GetId()
-	p.Send(l.HandleLook())
 }
 
 func (p *Player) GainXp(xp int) {
