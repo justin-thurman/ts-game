@@ -19,7 +19,6 @@ const PROMPT string = "%d/%d HP %d/%d XP >>> "
 type location interface {
 	HandleKill(*Player, string)
 	GetId() int
-	HandleRecall(*Player, int)
 	RemovePlayer(*Player)
 }
 
@@ -68,14 +67,6 @@ func (p *Player) Quit() {
 	}
 	p.Send("Goodbye, %s!\n", p.Name)
 	p.exitCallback()
-}
-
-func (p *Player) Recall() {
-	if p.RoomId == p.RecallRoomId {
-		p.Send("You are already at your recall point.")
-		return
-	}
-	p.location.HandleRecall(p, p.RecallRoomId)
 }
 
 func (p *Player) Death() {

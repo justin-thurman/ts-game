@@ -63,6 +63,10 @@ func (r *Room) HandleRecall(p *player.Player, destinationId int) {
 		p.Send("You're too busy fighting for your life!")
 		return
 	}
+	if r.Id == p.RecallRoomId {
+		p.Send("You are already at your recall point.")
+		return
+	}
 	r.movePlayer(p, destinationId)
 }
 

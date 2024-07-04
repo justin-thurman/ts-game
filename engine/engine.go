@@ -97,7 +97,7 @@ mainLoop:
 		case strings.HasPrefix("down", cmd):
 			playerRoom.HandleMovement(p, cmd)
 		case strings.HasPrefix("recall", cmd):
-			p.Recall()
+			playerRoom.HandleRecall(p, p.RecallRoomId)
 		case strings.HasPrefix("quit", cmd):
 			if err != nil {
 				log.Error("Player room not found during quit", "player", p.Name, "roomId", p.RoomId)
