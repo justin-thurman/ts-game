@@ -123,7 +123,7 @@ mainLoop:
 				player.Send("%s gossips, \"%s\"", p.Name, cmdArgs)
 			}
 		case strings.HasPrefix("look", cmd):
-			p.Send(p.Location().HandleLook())
+			p.Send(playerRoom.HandleLook())
 		case strings.HasPrefix("kill", cmd):
 			if strings.TrimSpace(cmdArgs) == "" {
 				p.Send("Who do you want to kill?")
