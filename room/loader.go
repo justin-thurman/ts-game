@@ -59,6 +59,9 @@ func Load() error {
 	}
 	for _, z := range Zones {
 		z.initialize()
+		for _, si := range z.SpecialMobs {
+			si.Initialize()
+		}
 	}
 	return nil
 }

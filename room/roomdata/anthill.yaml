@@ -10,6 +10,20 @@ mobs:
     maxDamage: 3
     health: 10
     xpValue: 10
+specialMobs:
+  - mobInfo:
+      name: "the ant queen"
+      targetingNames:
+        - ant
+        - queen
+      idleDescription: "The ant queen is here, lording over her subjects."
+      minDamage: 3
+      maxDamage: 5
+      health: 20
+      xpValue: 40
+    roomId: 8
+    timer: 60
+    spawnChance: 1.0
 rooms:
   - id: 6
     name: "Ant Hill Tunnel"

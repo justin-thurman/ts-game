@@ -116,11 +116,8 @@ func (r *Room) Tick() {
 		damage := p.Damage()
 		target.TakeDamage(damage)
 		p.BufferMsg("You deal %d damage to %s!", damage, target.Name)
-		if target.Dead { // TODO: extract this?
-			r.zone.handleMobDeath()
-			r.removeMob(target)
-			p.BufferMsg("You killed %s!", target.Name)
-			p.GainXp(target.XpValue())
+		if target.Dead {
+			r.handlePlayerKilledMob(p, target)
 		}
 		p.HasActedThisRound = false
 	}
@@ -171,15 +168,20 @@ func (r *Room) startCombat(p *player.Player, m *mob.Mob) {
 		m.TakeDamage(damage)
 		p.BufferMsg("You deal %d damage to %s!", damage, m.Name)
 		if m.Dead {
-			r.zone.handleMobDeath()
-			r.removeMob(m)
-			p.BufferMsg("You killed %s!", m.Name)
-			p.GainXp(m.XpValue())
+			r.handlePlayerKilledMob(p, m)
 			return
 		}
 	}
 	r.players[p] = append(r.players[p], m)
 	r.mobs[m] = append(r.mobs[m], p)
+}
+
+func (r *Room) handlePlayerKilledMob(p *player.Player, m *mob.Mob) {
+	r.zone.handleMobDeath()
+	r.removeMob(m)
+	p.BufferMsg("You killed %s!", m.Name)
+	p.GainXp(m.XpValue())
+	m.HandleDeath()
 }
 
 func (r *Room) removeMob(m *mob.Mob) {

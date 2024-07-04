@@ -11,10 +11,11 @@ import (
 )
 
 type Zone struct {
-	Name         string        `yaml:"zone"`
-	Rooms        []*Room       `yaml:"rooms"`
-	Spawns       []mob.MobInfo `yaml:"mobs"`
-	MobCap       int           `yaml:"mobCap"`
+	Name         string           `yaml:"zone"`
+	Rooms        []*Room          `yaml:"rooms"`
+	Spawns       []mob.MobInfo    `yaml:"mobs"`
+	SpecialMobs  []*mob.SpawnInfo `yaml:"specialMobs"`
+	MobCap       int              `yaml:"mobCap"`
 	currMobCount int
 	mobCountLock sync.RWMutex
 }
@@ -25,6 +26,17 @@ func (z *Zone) Tick() {
 	}
 	if z.shouldSpawnMob() {
 		z.spawnRandomMob()
+	}
+	for _, spawn := range z.SpecialMobs {
+		if spawn.ShouldSpawn() {
+			m := spawn.Spawn()
+			r, err := FindRoomById(spawn.RoomId)
+			if err != nil {
+				slog.Error("Failed to find room when spawning special mob", "roomId", spawn.RoomId, "spawnName", spawn.MobInfo.Name)
+				continue
+			}
+			r.addMob(m)
+		}
 	}
 }
 
@@ -63,7 +75,7 @@ func (z *Zone) spawnRandomMob() {
 	mobInstance := mobToSpawn.Spawn()
 	z.mobCountLock.Lock()
 	defer z.mobCountLock.Unlock()
-	roomToSpawnIn.addMob(&mobInstance)
+	roomToSpawnIn.addMob(mobInstance)
 	z.currMobCount += 1
 }
 

@@ -24,8 +24,8 @@ type MobInfo struct {
 }
 
 // Creates a Mob from a MobInfo instance
-func (m *MobInfo) Spawn() Mob {
-	return Mob{
+func (m *MobInfo) Spawn() *Mob {
+	return &Mob{
 		Name:            m.Name,
 		IdleDescription: m.IdleDescription,
 		TargetingNames:  m.TargetingNames,
@@ -39,6 +39,7 @@ func (m *MobInfo) Spawn() Mob {
 
 // An individual mob spawn
 type Mob struct {
+	spawnInfo       *SpawnInfo
 	Name            string
 	IdleDescription string
 	TargetingNames  []string
@@ -70,6 +71,12 @@ func (m *Mob) Damage() int {
 
 func (m *Mob) XpValue() int {
 	return m.xpValue
+}
+
+func (m *Mob) HandleDeath() {
+	if m.spawnInfo != nil {
+		m.spawnInfo.HandleDeath()
+	}
 }
 
 func (m *Mob) Tick() {}
