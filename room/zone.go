@@ -63,7 +63,7 @@ func (z *Zone) spawnRandomMob() {
 	mobInstance := mobToSpawn.Spawn()
 	z.mobCountLock.Lock()
 	defer z.mobCountLock.Unlock()
-	roomToSpawnIn.AddMob(&mobInstance)
+	roomToSpawnIn.addMob(&mobInstance)
 	z.currMobCount += 1
 }
 

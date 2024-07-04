@@ -17,10 +17,10 @@ func randRange(min, max int) int {
 const PROMPT string = "%d/%d HP %d/%d XP >>> "
 
 type Player struct {
+	exitCallback func()
 	io.Reader
 	io.Writer
 	msgBuffer         strings.Builder
-	exitCallback      func()
 	Name              string
 	minDamage         int
 	maxDamage         int
@@ -44,7 +44,7 @@ func New(name string, r io.Reader, w io.Writer, exitCallback func()) *Player {
 		exitCallback: exitCallback,
 		minDamage:    3,
 		maxDamage:    8,
-		CurrHealth:   10,
+		CurrHealth:   30,
 		MaxHealth:    30,
 		level:        1,
 		RoomId:       1,

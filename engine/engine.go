@@ -9,7 +9,6 @@ import (
 	"strings"
 	"sync"
 	"time"
-	"ts-game/mob"
 	playerModule "ts-game/player"
 	"ts-game/room"
 )
@@ -61,9 +60,6 @@ func (s *server) Start() error {
 		log.Info(err.Error())
 		return err
 	}
-	starterMob := mob.New("ant")
-	townCenter := room.Rooms[0]
-	townCenter.AddMob(starterMob)
 	for {
 		for _, r := range room.Rooms {
 			go r.Tick()

@@ -194,7 +194,7 @@ func (r *Room) removeMob(m *mob.Mob) {
 	}
 }
 
-func (r *Room) AddMob(m *mob.Mob) {
+func (r *Room) addMob(m *mob.Mob) {
 	r.Lock()
 	defer r.Unlock()
 	defer r.updateDescription()
