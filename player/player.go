@@ -17,7 +17,6 @@ func randRange(min, max int) int {
 const PROMPT string = "%d/%d HP %d/%d XP >>> "
 
 type location interface {
-	HandleKill(*Player, string)
 	GetId() int
 	RemovePlayer(*Player)
 }

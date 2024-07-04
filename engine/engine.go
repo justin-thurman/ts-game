@@ -129,7 +129,7 @@ mainLoop:
 				p.Send("Who do you want to kill?")
 				break
 			}
-			p.Location().HandleKill(p, cmdArgs)
+			playerRoom.HandleKill(p, cmdArgs)
 		default:
 			p.Send("Unknown command: %s\n", cmd)
 		}
