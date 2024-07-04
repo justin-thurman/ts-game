@@ -33,10 +33,6 @@ func (r *Room) initialize() {
 	go r.listenForIncomingPlayers()
 }
 
-func (r *Room) GetId() int {
-	return r.Id
-}
-
 func (r *Room) HandleLook() string {
 	return r.description
 }
@@ -208,6 +204,7 @@ func (r *Room) AddMob(m *mob.Mob) {
 func (r *Room) RemovePlayer(p *player.Player) {
 	r.Lock()
 	defer r.Unlock()
+	slog.Debug("Room player count before removal", "roomId", r.Id, "playerCount", len(r.players))
 	delete(r.players, p)
 	for m, players := range r.mobs {
 		for i, fightingPlayer := range players {
@@ -217,6 +214,7 @@ func (r *Room) RemovePlayer(p *player.Player) {
 			}
 		}
 	}
+	slog.Debug("Room player count after removal", "roomId", r.Id, "playerCount", len(r.players))
 }
 
 func (r *Room) AddPlayer(p *player.Player) {
@@ -228,7 +226,7 @@ func (r *Room) addPlayer(p *player.Player) {
 	defer r.Unlock()
 	defer r.updateDescription()
 	r.players[p] = []*mob.Mob{}
-	p.SetLocation(r)
+	p.SetRoomId(r.Id)
 	p.Send(r.HandleLook())
 }
 

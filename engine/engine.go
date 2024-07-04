@@ -141,6 +141,13 @@ mainLoop:
 	s.playerLock.Lock()
 	s.players = slices.DeleteFunc(s.players, func(player *playerModule.Player) bool { return player == p })
 	s.playerLock.Unlock()
+	playerRoom, err := room.FindRoomById(p.RoomId)
+	if err != nil {
+		log.Error("Error finding player room on quit", "player", p.Name, "roomId", p.RoomId)
+	}
+	if playerRoom != nil {
+		playerRoom.RemovePlayer(p)
+	}
 	p.Quit()
 	log.Info("User exit", "user", p.Name, "clientCount", len(s.players))
 }
