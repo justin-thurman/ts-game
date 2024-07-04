@@ -28,7 +28,7 @@ type Room struct {
 func (r *Room) initialize() {
 	r.mobs = make(map[*mob.Mob][]*player.Player)
 	r.players = make(map[*player.Player][]*mob.Mob)
-	r.incomingPlayers = make(chan *player.Player)
+	r.incomingPlayers = make(chan *player.Player, 20)
 	r.updateDescription()
 	go r.listenForIncomingPlayers()
 }
