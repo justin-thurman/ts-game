@@ -105,8 +105,8 @@ func (r *Room) Tick() {
 	for p, mobs := range r.players {
 		defer p.SendBufferedMsgs()
 		playerIsInCombat := len(mobs) > 0
+		p.Tick(playerIsInCombat)
 		if !playerIsInCombat {
-			p.Tick()
 			continue
 		}
 		if p.HasActedThisRound {

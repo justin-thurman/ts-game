@@ -87,7 +87,15 @@ func (p *Player) SendBufferedMsgs() {
 	p.msgBuffer.Reset()
 }
 
-func (p *Player) Tick() {
+func (p *Player) Tick(inCombat bool) {
+	p.Lock()
+	defer p.Unlock()
+	if !inCombat {
+		p.CurrHealth += 5 // TODO: health regen
+		if p.CurrHealth >= p.MaxHealth {
+			p.CurrHealth = p.MaxHealth
+		}
+	}
 }
 
 func (p *Player) Damage() int {
@@ -105,6 +113,8 @@ func (p *Player) SetRoomId(id int) {
 }
 
 func (p *Player) GainXp(xp int) {
+	p.Lock()
+	defer p.Unlock()
 	p.currXp += xp
 	p.BufferMsg("You gain %d experience!", xp)
 	if p.currXp >= p.xpTolevel {
@@ -117,6 +127,15 @@ func xpToLevel(level int) int {
 }
 
 func (p *Player) levelUp() {
+	// Increase level by 1
+	p.level += 1
+	// health gain
+	conModifier := 0 // TODO: Add real con modifier
+	healthGain := p.hitDice.AverageN(3) + conModifier
+	p.MaxHealth += healthGain
+	p.CurrHealth = p.MaxHealth
+	// reset currXp, with carry over, and set next xpTolevel
+	p.currXp -= p.xpTolevel
 	p.xpTolevel = xpToLevel(p.level)
-	p.BufferMsg("PLACEHOLDER: You leveld up")
+	p.BufferMsg("You gained a level! You gained %d health!", healthGain)
 }
