@@ -4,15 +4,10 @@ import (
 	"fmt"
 	"io"
 	"math"
-	"math/rand/v2"
 	"strings"
 	"sync"
+	"ts-game/dice"
 )
-
-// Returns a random integer in the closed range [min, max]
-func randRange(min, max int) int {
-	return rand.IntN(max+1-min) + min
-}
 
 const PROMPT string = "%d/%d HP %d/%d XP >>> "
 
@@ -22,8 +17,8 @@ type Player struct {
 	io.Writer
 	msgBuffer         strings.Builder
 	Name              string
-	minDamage         int
-	maxDamage         int
+	damageDice        dice.Dice
+	hitDice           dice.Dice
 	CurrHealth        int
 	MaxHealth         int
 	currXp            int
@@ -37,13 +32,14 @@ type Player struct {
 }
 
 func New(name string, r io.Reader, w io.Writer, exitCallback func()) *Player {
+	// TODO: Not sure how to handle health. I think I want players health to scale faster than mobs
 	return &Player{
 		Name:         name,
 		Reader:       r,
 		Writer:       w,
 		exitCallback: exitCallback,
-		minDamage:    3,
-		maxDamage:    8,
+		damageDice:   dice.Dice{Number: 2, Sides: 4},
+		hitDice:      dice.Dice{Number: 1, Sides: 10},
 		CurrHealth:   30,
 		MaxHealth:    30,
 		level:        1,
@@ -95,7 +91,7 @@ func (p *Player) Tick() {
 }
 
 func (p *Player) Damage() int {
-	return randRange(p.minDamage, p.maxDamage)
+	return p.damageDice.Roll()
 }
 
 func (p *Player) TakeDamage(damage int) {
