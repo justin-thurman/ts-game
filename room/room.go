@@ -9,14 +9,15 @@ import (
 	"ts-game/mob"
 	"ts-game/player"
 
+	orderedmap "github.com/wk8/go-ordered-map/v2"
 	_ "gopkg.in/yaml.v3"
 )
 
 type Room struct {
 	zone            *Zone
 	players         map[*player.Player][]*mob.Mob
-	mobs            map[*mob.Mob][]*player.Player // similar map of mobs to players
-	Exits           map[direction]int             `yaml:"exits"`
+	mobs            *orderedmap.OrderedMap[*mob.Mob, []*player.Player]
+	Exits           map[direction]int `yaml:"exits"`
 	description     string
 	DescriptionBase string `yaml:"description"`
 	Name            string `yaml:"name"`
@@ -25,7 +26,7 @@ type Room struct {
 }
 
 func (r *Room) initialize() {
-	r.mobs = make(map[*mob.Mob][]*player.Player)
+	r.mobs = orderedmap.New[*mob.Mob, []*player.Player]()
 	r.players = make(map[*player.Player][]*mob.Mob)
 	r.updateDescription()
 }
@@ -37,7 +38,9 @@ func (r *Room) HandleLook() string {
 func (r *Room) updateDescription() {
 	nameAndDescription := fmt.Sprintf("%s\n%s", r.Name, r.DescriptionBase)
 	descList := []string{nameAndDescription}
-	for m, players := range r.mobs {
+	for pair := r.mobs.Oldest(); pair != nil; pair = pair.Next() {
+		m := pair.Key
+		players := pair.Value
 		var s string
 		if len(players) == 0 {
 			s = m.IdleDescription
@@ -68,7 +71,8 @@ func (r *Room) HandleKill(p *player.Player, mobName string) {
 	}
 	var target *mob.Mob
 outerLoop:
-	for tar := range r.mobs {
+	for pair := r.mobs.Oldest(); pair != nil; pair = pair.Next() {
+		tar := pair.Key
 		if tar == nil {
 			continue
 		}
@@ -119,7 +123,9 @@ func (r *Room) Tick() {
 		p.HasActedThisRound = false
 	}
 	// Handle mob rounds
-	for m, players := range r.mobs {
+	for pair := r.mobs.Oldest(); pair != nil; pair = pair.Next() {
+		m := pair.Key
+		players := pair.Value
 		mobIsInCombat := len(players) > 0
 		if !mobIsInCombat {
 			m.Tick()
@@ -154,7 +160,7 @@ func (r *Room) PlayerIsInCombat(p *player.Player) bool {
 }
 
 func (r *Room) mobIsInRoom(m *mob.Mob) bool {
-	_, found := r.mobs[m]
+	_, found := r.mobs.Get(m)
 	return found
 }
 
@@ -170,7 +176,11 @@ func (r *Room) startCombat(p *player.Player, m *mob.Mob) {
 		}
 	}
 	r.players[p] = append(r.players[p], m)
-	r.mobs[m] = append(r.mobs[m], p)
+	playerSlice, found := r.mobs.Get(m)
+	if !found {
+		slog.Error("Mob not found in orderedmap", "mob", m)
+	}
+	r.mobs.Set(m, append(playerSlice, p))
 }
 
 func (r *Room) handlePlayerKilledMob(p *player.Player, m *mob.Mob) {
@@ -182,7 +192,7 @@ func (r *Room) handlePlayerKilledMob(p *player.Player, m *mob.Mob) {
 }
 
 func (r *Room) removeMob(m *mob.Mob) {
-	delete(r.mobs, m)
+	r.mobs.Delete(m)
 	for p, mobs := range r.players {
 		for i, fightingMob := range mobs {
 			if fightingMob == m {
@@ -197,7 +207,7 @@ func (r *Room) addMob(m *mob.Mob) {
 	r.Lock()
 	defer r.Unlock()
 	defer r.updateDescription()
-	r.mobs[m] = []*player.Player{}
+	r.mobs.Set(m, []*player.Player{})
 }
 
 func (r *Room) RemovePlayer(p *player.Player) {
@@ -205,10 +215,12 @@ func (r *Room) RemovePlayer(p *player.Player) {
 	defer r.Unlock()
 	slog.Debug("Room player count before removal", "roomId", r.Id, "playerCount", len(r.players))
 	delete(r.players, p)
-	for m, players := range r.mobs {
+	for pair := r.mobs.Oldest(); pair != nil; pair = pair.Next() {
+		m := pair.Key
+		players := pair.Value
 		for i, fightingPlayer := range players {
 			if fightingPlayer == p {
-				r.mobs[m] = slices.Delete(players, i, i+1)
+				r.mobs.Set(m, slices.Delete(players, i, i+1))
 				break
 			}
 		}
