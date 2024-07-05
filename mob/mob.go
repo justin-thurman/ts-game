@@ -1,26 +1,20 @@
 package mob
 
 import (
-	"math/rand/v2"
 	"sync"
+	"ts-game/dice"
 
 	_ "gopkg.in/yaml.v3"
 )
 
-// Returns a random integer in the closed range [min, max]
-func randRange(min, max int) int {
-	return rand.IntN(max+1-min) + min
-}
-
 // The template that an individual mob is spawned from
 type MobInfo struct {
-	Name            string   `yaml:"name"`
-	IdleDescription string   `yaml:"idleDescription"`
-	TargetingNames  []string `yaml:"targetingNames"`
-	MinDamage       int      `yaml:"minDamage"`
-	MaxDamage       int      `yaml:"maxDamage"`
-	MaxHealth       int      `yaml:"health"`
-	XpValue         int      `yaml:"xpValue"`
+	Name            string    `yaml:"name"`
+	IdleDescription string    `yaml:"idleDescription"`
+	TargetingNames  []string  `yaml:"targetingNames"`
+	DamageDice      dice.Dice `yaml:"damageDice"`
+	MaxHealth       int       `yaml:"health"`
+	XpValue         int       `yaml:"xpValue"`
 }
 
 // Creates a Mob from a MobInfo instance
@@ -29,8 +23,7 @@ func (m *MobInfo) Spawn() *Mob {
 		Name:            m.Name,
 		IdleDescription: m.IdleDescription,
 		TargetingNames:  m.TargetingNames,
-		minDamage:       m.MinDamage,
-		maxDamage:       m.MaxDamage,
+		damageDice:      m.DamageDice,
 		currHealth:      m.MaxHealth,
 		maxHealth:       m.MaxHealth,
 		xpValue:         m.XpValue,
@@ -43,17 +36,12 @@ type Mob struct {
 	Name            string
 	IdleDescription string
 	TargetingNames  []string
-	minDamage       int
-	maxDamage       int
+	damageDice      dice.Dice
 	currHealth      int
 	maxHealth       int
 	xpValue         int
 	Dead            bool
 	sync.Mutex
-}
-
-func New(name string) *Mob {
-	return &Mob{Name: name, minDamage: 1, maxDamage: 3, currHealth: 10, maxHealth: 10, xpValue: 10}
 }
 
 func (m *Mob) TakeDamage(dam int) {
@@ -65,8 +53,8 @@ func (m *Mob) TakeDamage(dam int) {
 	}
 }
 
-func (m *Mob) Damage() int {
-	return randRange(m.minDamage, m.maxDamage)
+func (m *Mob) Damage() (dealtDamage int) {
+	return m.damageDice.Roll()
 }
 
 func (m *Mob) XpValue() int {
