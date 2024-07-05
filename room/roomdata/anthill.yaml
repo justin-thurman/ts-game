@@ -6,8 +6,9 @@ mobs:
       - "worker"
       - "ant"
     idleDescription: "A worker ant is standing here, shuffling about its tasks."
+    level: 1
     damageDice: 1d3
-    health: 10
+    hitDice: 1d10
     xpValue: 10
 specialMobs:
   - mobInfo:
@@ -16,8 +17,9 @@ specialMobs:
         - ant
         - queen
       idleDescription: "The ant queen is here, lording over her subjects."
+      level: 2
       damageDice: 3d2
-      health: 20
+      hitDice: 1d12
       xpValue: 40
     roomId: 8
     timer: 60
