@@ -6,15 +6,24 @@ import (
 	"math"
 	"strings"
 	"sync"
+	"ts-game/classes"
 	"ts-game/dice"
+	"ts-game/stats"
 )
 
 const PROMPT string = "%d/%d HP %d/%d XP >>> "
+
+type class interface {
+	StartingStats() *stats.Stats
+	HitDice() *dice.Dice
+}
 
 type Player struct {
 	exitCallback func()
 	io.Reader
 	io.Writer
+	class             class
+	stats             *stats.Stats
 	msgBuffer         strings.Builder
 	Name              string
 	damageDice        dice.Dice
@@ -32,16 +41,22 @@ type Player struct {
 }
 
 func New(name string, r io.Reader, w io.Writer, exitCallback func()) *Player {
+	class := &classes.Warrior{}
+	startingStats := class.StartingStats()
 	// TODO: Not sure how to handle health. I think I want players health to scale faster than mobs
+	hitDice := class.HitDice()
+	startingHealth := hitDice.Max() + startingStats.ConModifier + 15 // 15 as extra base for now
 	return &Player{
 		Name:         name,
 		Reader:       r,
 		Writer:       w,
 		exitCallback: exitCallback,
+		class:        class,
+		stats:        startingStats,
 		damageDice:   dice.Dice{Number: 2, Sides: 4},
-		hitDice:      dice.Dice{Number: 1, Sides: 10},
-		CurrHealth:   30,
-		MaxHealth:    30,
+		hitDice:      *hitDice,
+		CurrHealth:   startingHealth,
+		MaxHealth:    startingHealth,
 		level:        1,
 		RoomId:       1,
 		RecallRoomId: 1,
@@ -99,7 +114,7 @@ func (p *Player) Tick(inCombat bool) {
 }
 
 func (p *Player) Damage() int {
-	return p.damageDice.Roll()
+	return p.damageDice.Roll() + p.stats.StrModifier
 }
 
 func (p *Player) TakeDamage(damage int) {
@@ -130,8 +145,7 @@ func (p *Player) levelUp() {
 	// Increase level by 1
 	p.level += 1
 	// health gain
-	conModifier := 0 // TODO: Add real con modifier
-	healthGain := p.hitDice.AverageN(3) + conModifier
+	healthGain := p.hitDice.AverageN(3) + p.stats.ConModifier
 	p.MaxHealth += healthGain
 	p.CurrHealth = p.MaxHealth
 	// reset currXp, with carry over, and set next xpTolevel
