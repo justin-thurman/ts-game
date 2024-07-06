@@ -172,10 +172,7 @@ func (r *Room) startCombat(p *player.Player, m *mob.Mob) {
 		p.BufferMsg("You deal %d damage to %s!", damage, m.Name)
 		if m.Dead {
 			r.handlePlayerKilledMob(p, m)
-			if !r.PlayerIsInCombat(p) {
-				// Then reset their round action since combat is over
-				p.HasActedThisRound = false
-			}
+			p.HasActedThisRound = false
 			return
 		}
 	}

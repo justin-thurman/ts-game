@@ -16,6 +16,7 @@ const PROMPT string = "%d/%d HP %d/%d XP >>> "
 type class interface {
 	StartingStats() *stats.Stats
 	HitDice() *dice.Dice
+	String() string
 }
 
 type Player struct {
@@ -24,8 +25,8 @@ type Player struct {
 	io.Writer
 	class             class
 	stats             *stats.Stats
-	msgBuffer         strings.Builder
 	Name              string
+	msgBuffer         strings.Builder
 	damageDice        dice.Dice
 	hitDice           dice.Dice
 	CurrHealth        int
@@ -152,4 +153,15 @@ func (p *Player) levelUp() {
 	p.currXp -= p.xpTolevel
 	p.xpTolevel = xpToLevel(p.level)
 	p.BufferMsg("You gained a level! You gained %d health!", healthGain)
+}
+
+// Score returns the string representing the player's character sheet, for use in the score command.
+func (p *Player) Score() string {
+	scoreString := `Name: %s
+  Class: %s
+  Level: %d
+  %s
+  Health: %d/%d
+  XP: %d/%d`
+	return fmt.Sprintf(scoreString, p.Name, p.class.String(), p.level, p.stats.String(), p.CurrHealth, p.MaxHealth, p.currXp, p.xpTolevel)
 }

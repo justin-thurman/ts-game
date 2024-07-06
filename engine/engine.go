@@ -106,6 +106,8 @@ mainLoop:
 			}
 			// Logic handled below in order to also save users on disconnect
 			break mainLoop
+		case strings.HasPrefix("score", cmd):
+			p.Send(p.Score())
 		case strings.HasPrefix("gossip", cmd):
 			if strings.TrimSpace(cmdArgs) == "" {
 				p.Send("What do you want to gossip?")

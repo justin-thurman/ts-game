@@ -21,9 +21,9 @@ func New(str, con int) *Stats {
 	}
 }
 
-// Display returns a string representing the stat values.
-func (s *Stats) Display() string {
-	fmtString := `Stats:
+// String returns a string representing the stat values.
+func (s *Stats) String() string {
+	fmtString := `Stats [base (modifier)]:
   Strength:     %d (%d)
   Constitution: %d (%d)`
 	return fmt.Sprintf(fmtString, s.Str, s.StrModifier, s.Con, s.ConModifier)
