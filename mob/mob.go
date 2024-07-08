@@ -59,12 +59,12 @@ type Mob struct {
 	maxHealth       int
 	xpValue         int
 	Dead            bool
-	sync.Mutex
+	mu              sync.Mutex
 }
 
 func (m *Mob) TakeDamage(dam int) {
-	m.Lock()
-	defer m.Unlock()
+	m.mu.Lock()
+	defer m.mu.Unlock()
 	m.currHealth = m.currHealth - dam
 	if m.currHealth <= 0 {
 		m.Dead = true
