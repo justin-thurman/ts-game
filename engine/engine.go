@@ -9,6 +9,7 @@ import (
 	"strings"
 	"sync"
 	"time"
+	"ts-game/items"
 	playerModule "ts-game/player"
 	"ts-game/room"
 )
@@ -55,7 +56,12 @@ func (s *server) Connect(r io.Reader, w io.Writer, exitCallback func()) {
 }
 
 func (s *server) Start() error {
-	err := room.Load()
+	err := items.Load()
+	if err != nil {
+		log.Info(err.Error())
+		return err
+	}
+	err = room.Load()
 	if err != nil {
 		log.Info(err.Error())
 		return err
@@ -94,6 +100,8 @@ mainLoop:
 			playerRoom.HandleMovement(p, cmd)
 		case strings.HasPrefix("recall", cmd):
 			playerRoom.HandleRecall(p, p.RecallRoomId)
+		case strings.HasPrefix("equipment", cmd):
+			p.Send(p.Eq())
 		case strings.HasPrefix("quit", cmd):
 			if err != nil {
 				log.Error("Player room not found during quit", "player", p.Name, "roomId", p.RoomId)

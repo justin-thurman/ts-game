@@ -3,11 +3,13 @@ package player
 import (
 	"fmt"
 	"io"
+	"log/slog"
 	"math"
 	"strings"
 	"sync"
 	"ts-game/classes"
 	"ts-game/dice"
+	"ts-game/items"
 	"ts-game/stats"
 )
 
@@ -25,6 +27,7 @@ type Player struct {
 	io.Writer
 	class             class
 	stats             *stats.Stats
+	equip             *items.EquipInfo
 	Name              string
 	msgBuffer         strings.Builder
 	damageDice        dice.Dice
@@ -47,12 +50,20 @@ func New(name string, r io.Reader, w io.Writer, exitCallback func()) *Player {
 	// TODO: Not sure how to handle health. I think I want players health to scale faster than mobs
 	hitDice := class.HitDice()
 	startingHealth := hitDice.Max() + startingStats.ConModifier + 15 // 15 as extra base for now
+
+	equip := items.EquipInfo{}
+	startingWeapon, err := items.FindWeaponById(1) // TODO: this should go in the class itself
+	if err != nil {
+		slog.Error(err.Error(), "player", name)
+	}
+	startingWeapon.Equip(&equip)
 	return &Player{
 		Name:         name,
 		Reader:       r,
 		Writer:       w,
 		exitCallback: exitCallback,
 		class:        class,
+		equip:        &equip,
 		stats:        startingStats,
 		damageDice:   dice.Dice{Number: 2, Sides: 4},
 		hitDice:      *hitDice,
@@ -164,4 +175,9 @@ func (p *Player) Score() string {
   Health: %d/%d
   XP: %d/%d`
 	return fmt.Sprintf(scoreString, p.Name, p.class.String(), p.level, p.stats.String(), p.CurrHealth, p.MaxHealth, p.currXp, p.xpTolevel)
+}
+
+// Eq returns the string representing the player's current equipment, for use in the eq command.
+func (p *Player) Eq() string {
+	return p.equip.String()
 }

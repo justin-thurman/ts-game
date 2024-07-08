@@ -1,0 +1,8 @@
+- id: 1
+  name: a short sword
+  targetingNames:
+    - short
+    - sword
+    - a short sword
+    - short sword
+  damageDice: 2d4
