@@ -30,7 +30,6 @@ type Player struct {
 	equip             *items.EquipInfo
 	Name              string
 	msgBuffer         strings.Builder
-	damageDice        dice.Dice
 	hitDice           dice.Dice
 	CurrHealth        int
 	MaxHealth         int
@@ -65,7 +64,6 @@ func New(name string, r io.Reader, w io.Writer, exitCallback func()) *Player {
 		class:        class,
 		equip:        &equip,
 		stats:        startingStats,
-		damageDice:   dice.Dice{Number: 2, Sides: 4},
 		hitDice:      *hitDice,
 		CurrHealth:   startingHealth,
 		MaxHealth:    startingHealth,
@@ -126,7 +124,7 @@ func (p *Player) Tick(inCombat bool) {
 }
 
 func (p *Player) Damage() int {
-	return p.damageDice.Roll() + p.stats.StrModifier
+	return p.equip.Damage() + p.stats.StrModifier
 }
 
 func (p *Player) TakeDamage(damage int) {
