@@ -37,7 +37,7 @@ type Player struct {
 	RoomId            int
 	RecallRoomId      int
 	HasActedThisRound bool
-	sync.Mutex
+	mu                sync.Mutex
 	// TODO: Will eventually need a queued command for skills and spells, to go off on next combat round
 }
 
@@ -72,8 +72,8 @@ func (p *Player) Quit() {
 }
 
 func (p *Player) Death() {
-	p.Lock()
-	defer p.Unlock()
+	p.mu.Lock()
+	defer p.mu.Unlock()
 	p.currXp = p.currXp / 2
 	p.CurrHealth = p.MaxHealth
 }
@@ -104,8 +104,8 @@ func (p *Player) SendBufferedMsgs() {
 }
 
 func (p *Player) Tick(inCombat bool) {
-	p.Lock()
-	defer p.Unlock()
+	p.mu.Lock()
+	defer p.mu.Unlock()
 	if !inCombat {
 		p.CurrHealth += 5 // TODO: health regen
 		if p.CurrHealth >= p.MaxHealth {
@@ -119,8 +119,8 @@ func (p *Player) Damage() int {
 }
 
 func (p *Player) TakeDamage(damage int) {
-	p.Lock()
-	defer p.Unlock()
+	p.mu.Lock()
+	defer p.mu.Unlock()
 	p.CurrHealth -= damage
 }
 
@@ -129,8 +129,8 @@ func (p *Player) SetRoomId(id int) {
 }
 
 func (p *Player) GainXp(xp int) {
-	p.Lock()
-	defer p.Unlock()
+	p.mu.Lock()
+	defer p.mu.Unlock()
 	p.currXp += xp
 	p.BufferMsg("You gain %d experience!", xp)
 	if p.currXp >= p.xpTolevel {

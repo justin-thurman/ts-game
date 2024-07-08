@@ -22,7 +22,7 @@ type Room struct {
 	DescriptionBase string `yaml:"description"`
 	Name            string `yaml:"name"`
 	Id              int    `yaml:"id"`
-	sync.Mutex
+	charMu          sync.Mutex
 }
 
 func (r *Room) initialize() {
@@ -63,8 +63,8 @@ func (r *Room) updateDescription() {
 
 func (r *Room) HandleKill(p *player.Player, mobName string) {
 	mobName = strings.ToLower(mobName)
-	r.Lock()
-	defer r.Unlock()
+	r.charMu.Lock()
+	defer r.charMu.Unlock()
 	if !r.playerIsInRoom(p) {
 		slog.Error("Player not in room when HandleKill command ran", "player", p, "room", r)
 		return
@@ -98,8 +98,8 @@ outerLoop:
 }
 
 func (r *Room) Tick() {
-	r.Lock()
-	defer r.Unlock()
+	r.charMu.Lock()
+	defer r.charMu.Unlock()
 	defer r.updateDescription()
 	// Handle player rounds
 	for p, mobs := range r.players {
@@ -149,8 +149,8 @@ func (r *Room) playerIsInRoom(p *player.Player) bool {
 }
 
 func (r *Room) PlayerIsInCombat(p *player.Player) bool {
-	r.Lock()
-	defer r.Unlock()
+	r.charMu.Lock()
+	defer r.charMu.Unlock()
 	mobs, found := r.players[p]
 	if !found {
 		slog.Error("Player not found in room when checking if player is in combat", "player", p.Name, "roomId", r.Id)
@@ -205,15 +205,15 @@ func (r *Room) removeMob(m *mob.Mob) {
 }
 
 func (r *Room) addMob(m *mob.Mob) {
-	r.Lock()
-	defer r.Unlock()
+	r.charMu.Lock()
+	defer r.charMu.Unlock()
 	defer r.updateDescription()
 	r.mobs.Set(m, []*player.Player{})
 }
 
 func (r *Room) RemovePlayer(p *player.Player) {
-	r.Lock()
-	defer r.Unlock()
+	r.charMu.Lock()
+	defer r.charMu.Unlock()
 	slog.Debug("Room player count before removal", "roomId", r.Id, "playerCount", len(r.players))
 	delete(r.players, p)
 	for pair := r.mobs.Oldest(); pair != nil; pair = pair.Next() {
@@ -230,8 +230,8 @@ func (r *Room) RemovePlayer(p *player.Player) {
 }
 
 func (r *Room) AddPlayer(p *player.Player) {
-	r.Lock()
-	defer r.Unlock()
+	r.charMu.Lock()
+	defer r.charMu.Unlock()
 	defer r.updateDescription()
 	r.players[p] = []*mob.Mob{}
 	p.SetRoomId(r.Id)
