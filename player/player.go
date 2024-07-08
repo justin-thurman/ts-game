@@ -3,7 +3,6 @@ package player
 import (
 	"fmt"
 	"io"
-	"log/slog"
 	"math"
 	"strings"
 	"sync"
@@ -50,19 +49,13 @@ func New(name string, r io.Reader, w io.Writer, exitCallback func()) *Player {
 	hitDice := class.HitDice()
 	startingHealth := hitDice.Max() + startingStats.ConModifier + 15 // 15 as extra base for now
 
-	equip := items.EquipInfo{}
-	startingWeapon, err := items.FindWeaponById(1) // TODO: this should go in the class itself
-	if err != nil {
-		slog.Error(err.Error(), "player", name)
-	}
-	startingWeapon.Equip(&equip)
 	return &Player{
 		Name:         name,
 		Reader:       r,
 		Writer:       w,
 		exitCallback: exitCallback,
 		class:        class,
-		equip:        &equip,
+		equip:        class.StartingEquipment(),
 		stats:        startingStats,
 		hitDice:      *hitDice,
 		CurrHealth:   startingHealth,

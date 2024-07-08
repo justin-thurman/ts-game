@@ -24,9 +24,9 @@ func (einfo *EquipInfo) Damage() int {
 // String returns a display of the player's equipment slots and any equipped items.
 func (einfo *EquipInfo) String() string {
 	fmtString := `Equipment:
-  Body: %s
-  Legs: %s
-  Helm: %s
+  Body:        %s
+  Legs:        %s
+  Helm:        %s
   Main Weapon: %s`
 	body := "Nothing"
 	if einfo.body != nil {
