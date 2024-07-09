@@ -86,7 +86,6 @@ func (a *armor) GroundString() string {
 
 // Equip equips the armor to the provided EquipInfo instance.
 func (a *armor) Equip(equipInfo *EquipInfo) {
-	// TODO: handle unequip, putting back in inventory
 	switch a.Slot {
 	case "body":
 		equipInfo.body = a
@@ -135,7 +134,6 @@ func (w *weapon) GroundString() string {
 
 // Equip equips the weapon to the provided EquipInfo instance.
 func (w *weapon) Equip(equipInfo *EquipInfo) {
-	// TODO: handle unequip
 	// TODO: handle two handed weapons, dual wield
 	equipInfo.mainWeapon = w
 }
