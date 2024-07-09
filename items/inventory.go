@@ -159,10 +159,8 @@ func (i *Inventory) removeArmor(a *armor) {
 
 func (i *Inventory) findWeaponByName(itemName string) *weapon {
 	for _, weap := range i.weapons {
-		for _, targetingName := range weap.TargetingNames {
-			if itemName == targetingName {
-				return weap
-			}
+		if weap.hasName(itemName) {
+			return weap
 		}
 	}
 	return nil
@@ -170,10 +168,8 @@ func (i *Inventory) findWeaponByName(itemName string) *weapon {
 
 func (i *Inventory) findArmorByName(itemName string) *armor {
 	for _, arm := range i.armor {
-		for _, targetingName := range arm.TargetingNames {
-			if itemName == targetingName {
-				return arm
-			}
+		if arm.hasName(itemName) {
+			return arm
 		}
 	}
 	return nil
