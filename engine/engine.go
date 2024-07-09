@@ -9,6 +9,7 @@ import (
 	"strings"
 	"sync"
 	"time"
+	"ts-game/help"
 	"ts-game/items"
 	playerModule "ts-game/player"
 	"ts-game/room"
@@ -98,6 +99,8 @@ mainLoop:
 			playerRoom.HandleMovement(p, cmd)
 		case strings.HasPrefix("down", cmd):
 			playerRoom.HandleMovement(p, cmd)
+		case strings.HasPrefix("help", cmd):
+			p.Send(help.HELP)
 		case strings.HasPrefix("recall", cmd):
 			playerRoom.HandleRecall(p, p.RecallRoomId)
 		case strings.HasPrefix("equipment", cmd):
