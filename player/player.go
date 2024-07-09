@@ -169,3 +169,8 @@ func (p *Player) Score() string {
   XP: %d/%d`
 	return fmt.Sprintf(scoreString, p.Name, p.class.String(), p.level, p.stats.String(), p.CurrHealth, p.MaxHealth, p.currXp, p.xpTolevel)
 }
+
+// UpdateStats updates the player's statistics based on the items currently worn.
+func (p *Player) UpdateStats() {
+	// TODO: Implement item stats
+}

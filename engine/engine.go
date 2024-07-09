@@ -106,10 +106,13 @@ mainLoop:
 			p.Send(p.Inventory.String())
 		case strings.HasPrefix("wear", cmd):
 			p.Send(p.Inventory.Wear(cmdArgs, p.Equip))
+			p.UpdateStats()
 		case strings.HasPrefix("wield", cmd):
 			p.Send(p.Inventory.Wield(cmdArgs, p.Equip))
+			p.UpdateStats()
 		case strings.HasPrefix("remove", cmd):
 			p.Send(p.Inventory.Remove(cmdArgs, p.Equip))
+			p.UpdateStats()
 		case strings.HasPrefix("get", cmd):
 			p.Send(playerRoom.HandleGet(p, cmdArgs))
 		case strings.HasPrefix("drop", cmd):
