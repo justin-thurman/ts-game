@@ -48,15 +48,21 @@ func (einfo *EquipInfo) String() string {
 }
 
 type armor struct {
-	Name           string   `yaml:"name"`
-	Slot           string   `yaml:"slot"` // TODO: probably make this a type
-	TargetingNames []string `yaml:"targetingNames"`
-	Id             int      `yaml:"id"`
+	Name              string   `yaml:"name"`
+	Slot              string   `yaml:"slot"` // TODO: probably make this a type
+	GroundDescription string   `yaml:"groundDescription"`
+	TargetingNames    []string `yaml:"targetingNames"`
+	Id                int      `yaml:"id"`
 }
 
 // String returns the armor's name.
 func (a *armor) String() string {
 	return a.Name
+}
+
+// GroundString returns the string for when the item is lying on the ground.
+func (a *armor) GroundString() string {
+	return a.GroundDescription
 }
 
 // Equip equips the armor to the provided EquipInfo instance.
@@ -72,7 +78,8 @@ func (a *armor) Equip(equipInfo *EquipInfo) {
 	}
 }
 
-func (a *armor) hasName(itemName string) bool {
+// HasName returns whether the item has the provided targeting name.
+func (a *armor) HasName(itemName string) bool {
 	for _, name := range a.TargetingNames {
 		if name == itemName {
 			return true
@@ -81,16 +88,29 @@ func (a *armor) hasName(itemName string) bool {
 	return false
 }
 
+// Get gets the armor and puts it in the player's inventory.
+func (a *armor) Get(inv *Inventory) {
+	inv.mu.Lock()
+	defer inv.mu.Unlock()
+	inv.addArmor(a)
+}
+
 type weapon struct {
-	Name           string    `yaml:"name"`
-	TargetingNames []string  `yaml:"targetingNames"`
-	Id             int       `yaml:"id"`
-	DamageDice     dice.Dice `yaml:"damageDice"`
+	Name              string    `yaml:"name"`
+	GroundDescription string    `yaml:"groundDescription"`
+	TargetingNames    []string  `yaml:"targetingNames"`
+	Id                int       `yaml:"id"`
+	DamageDice        dice.Dice `yaml:"damageDice"`
 }
 
 // String returns the weapon's name.
 func (w *weapon) String() string {
 	return w.Name
+}
+
+// GroundString returns the string for when the item is lying on the ground.
+func (w *weapon) GroundString() string {
+	return w.GroundDescription
 }
 
 // Equip equips the weapon to the provided EquipInfo instance.
@@ -104,11 +124,19 @@ func (w *weapon) damage() int {
 	return w.DamageDice.Roll()
 }
 
-func (w *weapon) hasName(itemName string) bool {
+// HasName returns whether the item has the provided targeting name.
+func (w *weapon) HasName(itemName string) bool {
 	for _, name := range w.TargetingNames {
 		if name == itemName {
 			return true
 		}
 	}
 	return false
+}
+
+// Get gets the weapon and puts it in the player's inventory.
+func (w *weapon) Get(inv *Inventory) {
+	inv.mu.Lock()
+	defer inv.mu.Unlock()
+	inv.addWeapon(w)
 }

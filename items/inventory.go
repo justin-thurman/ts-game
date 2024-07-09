@@ -8,6 +8,30 @@ import (
 	"sync"
 )
 
+// RoomItem is the interface needed by any item that can be dropped in a room.
+type RoomItem interface {
+	Get(*Inventory)
+	GroundString() string
+	HasName(string) bool
+	String() string
+}
+
+// GetItemForDropping finds an item by name in the player's inventory.
+func (i *Inventory) GetItemForDropping(itemName string) RoomItem {
+	// RoomItem is defined in the items module because it needs to be returned here
+	arm := i.findArmorByName(itemName)
+	if arm != nil {
+		i.removeArmor(arm)
+		return arm
+	}
+	weap := i.findWeaponByName(itemName)
+	if weap != nil {
+		i.removeWeapon(weap)
+		return weap
+	}
+	return nil
+}
+
 // Inventory represents a player's inventory.
 type Inventory struct {
 	armor   []*armor
@@ -108,22 +132,22 @@ func (i *Inventory) Wield(itemName string, einfo *EquipInfo) (message string) {
 // Remove unequips the item indicated by name.
 func (i *Inventory) Remove(itemName string, einfo *EquipInfo) (message string) {
 	switch {
-	case einfo.body != nil && einfo.body.hasName(itemName):
+	case einfo.body != nil && einfo.body.HasName(itemName):
 		name := einfo.body.String()
 		i.addArmor(einfo.body)
 		einfo.body = nil
 		return "You unequip " + name
-	case einfo.legs != nil && einfo.legs.hasName(itemName):
+	case einfo.legs != nil && einfo.legs.HasName(itemName):
 		name := einfo.legs.String()
 		i.addArmor(einfo.legs)
 		einfo.legs = nil
 		return "You unequip " + name
-	case einfo.helm != nil && einfo.helm.hasName(itemName):
+	case einfo.helm != nil && einfo.helm.HasName(itemName):
 		name := einfo.helm.String()
 		i.addArmor(einfo.helm)
 		einfo.helm = nil
 		return "You unequip " + name
-	case einfo.mainWeapon != nil && einfo.mainWeapon.hasName(itemName):
+	case einfo.mainWeapon != nil && einfo.mainWeapon.HasName(itemName):
 		name := einfo.mainWeapon.String()
 		i.addWeapon(einfo.mainWeapon)
 		einfo.mainWeapon = nil
@@ -159,7 +183,7 @@ func (i *Inventory) removeArmor(a *armor) {
 
 func (i *Inventory) findWeaponByName(itemName string) *weapon {
 	for _, weap := range i.weapons {
-		if weap.hasName(itemName) {
+		if weap.HasName(itemName) {
 			return weap
 		}
 	}
@@ -168,7 +192,7 @@ func (i *Inventory) findWeaponByName(itemName string) *weapon {
 
 func (i *Inventory) findArmorByName(itemName string) *armor {
 	for _, arm := range i.armor {
-		if arm.hasName(itemName) {
+		if arm.HasName(itemName) {
 			return arm
 		}
 	}

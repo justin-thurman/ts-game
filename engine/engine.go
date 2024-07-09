@@ -110,6 +110,10 @@ mainLoop:
 			p.Send(p.Inventory.Wield(cmdArgs, p.Equip))
 		case strings.HasPrefix("remove", cmd):
 			p.Send(p.Inventory.Remove(cmdArgs, p.Equip))
+		case strings.HasPrefix("get", cmd):
+			p.Send(playerRoom.HandleGet(p, cmdArgs))
+		case strings.HasPrefix("drop", cmd):
+			p.Send(playerRoom.HandleDrop(p, cmdArgs))
 		case strings.HasPrefix("quit", cmd):
 			if err != nil {
 				log.Error("Player room not found during quit", "player", p.Name, "roomId", p.RoomId)

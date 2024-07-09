@@ -6,6 +6,7 @@ import (
 	"slices"
 	"strings"
 	"sync"
+	"ts-game/items"
 	"ts-game/mob"
 	"ts-game/player"
 
@@ -21,8 +22,10 @@ type Room struct {
 	description     string
 	DescriptionBase string `yaml:"description"`
 	Name            string `yaml:"name"`
-	Id              int    `yaml:"id"`
+	roomItems       []items.RoomItem
+	Id              int `yaml:"id"`
 	charMu          sync.Mutex
+	itemsMu         sync.Mutex
 }
 
 func (r *Room) initialize() {
@@ -48,6 +51,9 @@ func (r *Room) updateDescription() {
 			s = fmt.Sprintf("%s is fighting for its life!", m.Name)
 		}
 		descList = append(descList, s)
+	}
+	for _, item := range r.roomItems {
+		descList = append(descList, item.GroundString())
 	}
 	if len(r.Exits) == 0 {
 		descList = append(descList, "Exits: None")

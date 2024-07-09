@@ -6,6 +6,7 @@
     - a short sword
     - short sword
   damageDice: 2d4
+  groundDescription: A short sword is lying on the ground.
 - id: 2
   name: a long sword
   targetingNames:
@@ -14,3 +15,4 @@
     - a long sword
     - long sword
   damageDice: 2d6
+  groundDescription: A long sword is here, blade gleaming.
