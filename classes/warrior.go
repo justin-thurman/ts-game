@@ -26,6 +26,12 @@ func (w *Warrior) StartingEquipment() *items.EquipInfo {
 	return &einfo
 }
 
+// StartingInventory returns an Inventory representing the warrior's starting items.
+func (w *Warrior) StartingInventory() *items.Inventory {
+	inv := items.NewInventory([]int{2})
+	return inv
+}
+
 // HitDice returns a Dice struct representing the warrior's hit dice.
 func (w *Warrior) HitDice() *dice.Dice {
 	return &dice.Dice{Number: 1, Sides: 10}

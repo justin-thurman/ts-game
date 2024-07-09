@@ -26,7 +26,8 @@ type Player struct {
 	io.Writer
 	class             class
 	stats             *stats.Stats
-	equip             *items.EquipInfo
+	Equip             *items.EquipInfo
+	Inventory         *items.Inventory
 	Name              string
 	msgBuffer         strings.Builder
 	hitDice           dice.Dice
@@ -55,7 +56,8 @@ func New(name string, r io.Reader, w io.Writer, exitCallback func()) *Player {
 		Writer:       w,
 		exitCallback: exitCallback,
 		class:        class,
-		equip:        class.StartingEquipment(),
+		Equip:        class.StartingEquipment(),
+		Inventory:    class.StartingInventory(),
 		stats:        startingStats,
 		hitDice:      *hitDice,
 		CurrHealth:   startingHealth,
@@ -117,7 +119,7 @@ func (p *Player) Tick(inCombat bool) {
 }
 
 func (p *Player) Damage() int {
-	return p.equip.Damage() + p.stats.StrModifier
+	return p.Equip.Damage() + p.stats.StrModifier
 }
 
 func (p *Player) TakeDamage(damage int) {
@@ -166,9 +168,4 @@ func (p *Player) Score() string {
   Health: %d/%d
   XP: %d/%d`
 	return fmt.Sprintf(scoreString, p.Name, p.class.String(), p.level, p.stats.String(), p.CurrHealth, p.MaxHealth, p.currXp, p.xpTolevel)
-}
-
-// Eq returns the string representing the player's current equipment, for use in the eq command.
-func (p *Player) Eq() string {
-	return p.equip.String()
 }

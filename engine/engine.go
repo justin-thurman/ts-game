@@ -101,7 +101,13 @@ mainLoop:
 		case strings.HasPrefix("recall", cmd):
 			playerRoom.HandleRecall(p, p.RecallRoomId)
 		case strings.HasPrefix("equipment", cmd):
-			p.Send(p.Eq())
+			p.Send(p.Equip.String())
+		case strings.HasPrefix("inventory", cmd):
+			p.Send(p.Inventory.String())
+		case strings.HasPrefix("wear", cmd):
+			p.Send(p.Inventory.Wear(cmdArgs, p.Equip))
+		case strings.HasPrefix("wield", cmd):
+			p.Send(p.Inventory.Wield(cmdArgs, p.Equip))
 		case strings.HasPrefix("quit", cmd):
 			if err != nil {
 				log.Error("Player room not found during quit", "player", p.Name, "roomId", p.RoomId)

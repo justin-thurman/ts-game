@@ -6,3 +6,11 @@
     - a short sword
     - short sword
   damageDice: 2d4
+- id: 2
+  name: a long sword
+  targetingNames:
+    - long
+    - sword
+    - a long sword
+    - long sword
+  damageDice: 2d6
