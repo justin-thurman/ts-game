@@ -35,6 +35,8 @@ func NewInventory(weaponIds []int) *Inventory {
 
 // String returns a list of all the items in the player's inventory.
 func (i *Inventory) String() string {
+	i.mu.Lock()
+	defer i.mu.Unlock()
 	var out strings.Builder
 	out.WriteString("Inventory:")
 	for _, a := range i.armor {
@@ -101,6 +103,34 @@ func (i *Inventory) Wield(itemName string, einfo *EquipInfo) (message string) {
 	i.removeWeapon(item)
 	outMessage.WriteString(fmt.Sprintf("You wield %s.", item.String()))
 	return outMessage.String()
+}
+
+// Remove unequips the item indicated by name.
+func (i *Inventory) Remove(itemName string, einfo *EquipInfo) (message string) {
+	switch {
+	case einfo.body != nil && einfo.body.hasName(itemName):
+		name := einfo.body.String()
+		i.addArmor(einfo.body)
+		einfo.body = nil
+		return "You unequip " + name
+	case einfo.legs != nil && einfo.legs.hasName(itemName):
+		name := einfo.legs.String()
+		i.addArmor(einfo.legs)
+		einfo.legs = nil
+		return "You unequip " + name
+	case einfo.helm != nil && einfo.helm.hasName(itemName):
+		name := einfo.helm.String()
+		i.addArmor(einfo.helm)
+		einfo.helm = nil
+		return "You unequip " + name
+	case einfo.mainWeapon != nil && einfo.mainWeapon.hasName(itemName):
+		name := einfo.mainWeapon.String()
+		i.addWeapon(einfo.mainWeapon)
+		einfo.mainWeapon = nil
+		return "You unequip " + name
+	default:
+		return "You don't seem to be wearing " + itemName
+	}
 }
 
 func (i *Inventory) addWeapon(w *weapon) {

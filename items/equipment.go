@@ -72,6 +72,15 @@ func (a *armor) Equip(equipInfo *EquipInfo) {
 	}
 }
 
+func (a *armor) hasName(itemName string) bool {
+	for _, name := range a.TargetingNames {
+		if name == itemName {
+			return true
+		}
+	}
+	return false
+}
+
 type weapon struct {
 	Name           string    `yaml:"name"`
 	TargetingNames []string  `yaml:"targetingNames"`
@@ -93,4 +102,13 @@ func (w *weapon) Equip(equipInfo *EquipInfo) {
 
 func (w *weapon) damage() int {
 	return w.DamageDice.Roll()
+}
+
+func (w *weapon) hasName(itemName string) bool {
+	for _, name := range w.TargetingNames {
+		if name == itemName {
+			return true
+		}
+	}
+	return false
 }
