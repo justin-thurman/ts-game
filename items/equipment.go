@@ -47,12 +47,31 @@ func (einfo *EquipInfo) String() string {
 	return fmt.Sprintf(fmtString, body, legs, helm, mainWeapon)
 }
 
+// Stats returns the stat bonuses for all currently equipped gear.
+func (einfo *EquipInfo) Stats() StatsBonus {
+	cumulative := StatsBonus{}
+	if einfo.body != nil {
+		cumulative.Add(&einfo.body.Stats)
+	}
+	if einfo.helm != nil {
+		cumulative.Add(&einfo.helm.Stats)
+	}
+	if einfo.legs != nil {
+		cumulative.Add(&einfo.legs.Stats)
+	}
+	if einfo.mainWeapon != nil {
+		cumulative.Add(&einfo.mainWeapon.Stats)
+	}
+	return cumulative
+}
+
 type armor struct {
-	Name              string   `yaml:"name"`
-	Slot              string   `yaml:"slot"` // TODO: probably make this a type
-	GroundDescription string   `yaml:"groundDescription"`
-	TargetingNames    []string `yaml:"targetingNames"`
-	Id                int      `yaml:"id"`
+	Name              string     `yaml:"name"`
+	Slot              string     `yaml:"slot"` // TODO: probably make this a type
+	GroundDescription string     `yaml:"groundDescription"`
+	TargetingNames    []string   `yaml:"targetingNames"`
+	Id                int        `yaml:"id"`
+	Stats             StatsBonus `yaml:"stats"`
 }
 
 // String returns the armor's name.
@@ -96,11 +115,12 @@ func (a *armor) Get(inv *Inventory) {
 }
 
 type weapon struct {
-	Name              string    `yaml:"name"`
-	GroundDescription string    `yaml:"groundDescription"`
-	TargetingNames    []string  `yaml:"targetingNames"`
-	Id                int       `yaml:"id"`
-	DamageDice        dice.Dice `yaml:"damageDice"`
+	Name              string     `yaml:"name"`
+	GroundDescription string     `yaml:"groundDescription"`
+	TargetingNames    []string   `yaml:"targetingNames"`
+	Id                int        `yaml:"id"`
+	DamageDice        dice.Dice  `yaml:"damageDice"`
+	Stats             StatsBonus `yaml:"stats"`
 }
 
 // String returns the weapon's name.
