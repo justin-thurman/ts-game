@@ -121,7 +121,7 @@ func (p *Player) Tick(inCombat bool) {
 }
 
 func (p *Player) Damage() int {
-	return p.Equip.Damage() + p.stats.StrModifier
+	return p.Equip.Damage() + p.stats.StrModifier + p.stats.DamageRoll
 }
 
 func (p *Player) TakeDamage(damage int) {

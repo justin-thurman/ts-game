@@ -18,3 +18,4 @@
   groundDescription: A long sword is here, blade gleaming.
   stats:
     str: 2
+    damage: 1

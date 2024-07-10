@@ -13,7 +13,7 @@ type Stats struct {
 	BaseCon     int
 	Con         int
 	ConModifier int
-	// TODO: Add damage roll bonuses
+	DamageRoll  int
 }
 
 // New creates a new Stats struct
@@ -32,8 +32,9 @@ func New(str, con int) *Stats {
 func (s *Stats) String() string {
 	fmtString := `Stats [base (modifier)]:
   Strength:     %d (Base: %d) - Bonus to strength rolls: %d
-  Constitution: %d (Base: %d) - Bonus to constitution rolls: %d`
-	return fmt.Sprintf(fmtString, s.Str, s.BaseStr, s.StrModifier, s.Con, s.BaseCon, s.ConModifier)
+  Constitution: %d (Base: %d) - Bonus to constitution rolls: %d
+  Damage roll:  %d`
+	return fmt.Sprintf(fmtString, s.Str, s.BaseStr, s.StrModifier, s.Con, s.BaseCon, s.ConModifier, s.DamageRoll)
 }
 
 func calculateModifier(statValue int) (modifier int) {
@@ -48,6 +49,7 @@ func (s *Stats) AddStatsBonus(b ...*StatsBonus) {
 		}
 		s.Str = s.BaseStr + bonus.Str
 		s.Con = s.BaseCon + bonus.Con
+		s.DamageRoll = s.DamageRoll + bonus.Damage
 	}
 	s.StrModifier = calculateModifier(s.Str)
 	s.ConModifier = calculateModifier(s.Con)
@@ -57,7 +59,7 @@ func (s *Stats) AddStatsBonus(b ...*StatsBonus) {
 type StatsBonus struct {
 	Str    int `yaml:"str"`
 	Con    int `yaml:"con"`
-	Damage int `yaml:"damage"` // TODO: Damage currently not implemented
+	Damage int `yaml:"damage"`
 }
 
 // Add adds the values from StatusBonus structs to another.
