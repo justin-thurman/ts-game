@@ -13,6 +13,7 @@ type Stats struct {
 	BaseCon     int
 	Con         int
 	ConModifier int
+	// TODO: Add damage roll bonuses
 }
 
 // New creates a new Stats struct
@@ -56,7 +57,7 @@ func (s *Stats) AddStatsBonus(b ...*StatsBonus) {
 type StatsBonus struct {
 	Str    int `yaml:"str"`
 	Con    int `yaml:"con"`
-	Damage int `yaml:"damage"`
+	Damage int `yaml:"damage"` // TODO: Damage currently not implemented
 }
 
 // Add adds the values from StatusBonus structs to another.
