@@ -1,2 +1,0 @@
-- [ ] Handle mob death
-- [ ] Move logic for spawning mobs to the room level, rather than at the server (it's not doing anything currently)
