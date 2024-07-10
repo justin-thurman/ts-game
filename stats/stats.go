@@ -3,7 +3,6 @@ package stats
 
 import (
 	"fmt"
-	"ts-game/items"
 )
 
 // Stats represents an entity's stats values.
@@ -40,10 +39,34 @@ func calculateModifier(statValue int) (modifier int) {
 	return (statValue - 10) / 2
 }
 
-// AddStatsBonus adds a StatsBonus struct to the player's stats.
-func (s *Stats) AddStatsBonus(b *items.StatsBonus) {
-	s.Str = s.BaseStr + b.Str
-	s.Con = s.BaseCon + b.Con
+// AddStatsBonus adds StatsBonus structs to the entity's stats.
+func (s *Stats) AddStatsBonus(b ...*StatsBonus) {
+	for _, bonus := range b {
+		if bonus == nil {
+			continue
+		}
+		s.Str = s.BaseStr + bonus.Str
+		s.Con = s.BaseCon + bonus.Con
+	}
 	s.StrModifier = calculateModifier(s.Str)
 	s.ConModifier = calculateModifier(s.Con)
+}
+
+// StatsBonus represents an increase to stats, i.e., from items or buffs.
+type StatsBonus struct {
+	Str    int `yaml:"str"`
+	Con    int `yaml:"con"`
+	Damage int `yaml:"damage"`
+}
+
+// Add adds the values from StatusBonus structs to another.
+func (s *StatsBonus) Add(others ...*StatsBonus) {
+	for _, other := range others {
+		if other == nil {
+			continue
+		}
+		s.Str += other.Str
+		s.Con += other.Con
+		s.Damage += other.Damage
+	}
 }

@@ -4,6 +4,7 @@ package items
 import (
 	"fmt"
 	"ts-game/dice"
+	"ts-game/stats"
 
 	_ "gopkg.in/yaml.v3"
 )
@@ -48,8 +49,8 @@ func (einfo *EquipInfo) String() string {
 }
 
 // Stats returns the stat bonuses for all currently equipped gear.
-func (einfo *EquipInfo) Stats() StatsBonus {
-	cumulative := StatsBonus{}
+func (einfo *EquipInfo) Stats() stats.StatsBonus {
+	cumulative := stats.StatsBonus{}
 	if einfo.body != nil {
 		cumulative.Add(&einfo.body.Stats)
 	}
@@ -66,12 +67,12 @@ func (einfo *EquipInfo) Stats() StatsBonus {
 }
 
 type armor struct {
-	Name              string     `yaml:"name"`
-	Slot              string     `yaml:"slot"` // TODO: probably make this a type
-	GroundDescription string     `yaml:"groundDescription"`
-	TargetingNames    []string   `yaml:"targetingNames"`
-	Id                int        `yaml:"id"`
-	Stats             StatsBonus `yaml:"stats"`
+	Name              string           `yaml:"name"`
+	Slot              string           `yaml:"slot"` // TODO: probably make this a type
+	GroundDescription string           `yaml:"groundDescription"`
+	TargetingNames    []string         `yaml:"targetingNames"`
+	Id                int              `yaml:"id"`
+	Stats             stats.StatsBonus `yaml:"stats"`
 }
 
 // String returns the armor's name.
@@ -114,12 +115,12 @@ func (a *armor) Get(inv *Inventory) {
 }
 
 type weapon struct {
-	Name              string     `yaml:"name"`
-	GroundDescription string     `yaml:"groundDescription"`
-	TargetingNames    []string   `yaml:"targetingNames"`
-	Id                int        `yaml:"id"`
-	DamageDice        dice.Dice  `yaml:"damageDice"`
-	Stats             StatsBonus `yaml:"stats"`
+	Name              string           `yaml:"name"`
+	GroundDescription string           `yaml:"groundDescription"`
+	TargetingNames    []string         `yaml:"targetingNames"`
+	Id                int              `yaml:"id"`
+	DamageDice        dice.Dice        `yaml:"damageDice"`
+	Stats             stats.StatsBonus `yaml:"stats"`
 }
 
 // String returns the weapon's name.
