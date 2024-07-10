@@ -50,7 +50,7 @@ func New(name string, r io.Reader, w io.Writer, exitCallback func()) *Player {
 	hitDice := class.HitDice()
 	startingHealth := hitDice.Max() + startingStats.ConModifier + 15 // 15 as extra base for now
 
-	return &Player{
+	p := &Player{
 		Name:         name,
 		Reader:       r,
 		Writer:       w,
@@ -67,6 +67,8 @@ func New(name string, r io.Reader, w io.Writer, exitCallback func()) *Player {
 		RecallRoomId: 1,
 		xpTolevel:    xpToLevel(1),
 	}
+	p.UpdateStats()
+	return p
 }
 
 func (p *Player) Quit() {
@@ -172,5 +174,6 @@ func (p *Player) Score() string {
 
 // UpdateStats updates the player's statistics based on the items currently worn.
 func (p *Player) UpdateStats() {
-	// TODO: Implement item stats
+	itemsBonus := p.Equip.Stats()
+	p.stats.AddStatsBonus(&itemsBonus)
 }
