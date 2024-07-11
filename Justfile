@@ -30,5 +30,5 @@ test:
   go test -v ./engine
 
 db:
-  docker run --name ts-pg -e POSTGRES_PASSWORD=password -d -p 5432:5432 -v pgdata:/var/lib/postgresql/data postgres
+  docker run --name ts-pg -e POSTGRES_PASSWORD=password -d -p 5432:5432 -v ts-pg-data:/var/lib/postgresql/data postgres
 
