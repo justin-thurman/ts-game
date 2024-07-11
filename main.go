@@ -7,9 +7,19 @@ import (
 	"net"
 	"os"
 	"ts-game/engine"
+	"ts-game/persistence"
+
+	"github.com/joho/godotenv"
 )
 
 func main() {
+	err := godotenv.Load()
+	if err != nil {
+		slog.Info("No .env file found")
+	}
+
+	persistence.Test()
+
 	verboseLoggingFlag := flag.Bool("v", false, "enables verbose logging output")
 	flag.Parse()
 	programLevel := new(slog.LevelVar)
