@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -24,5 +25,30 @@ func Test() {
 	if err != nil {
 		log.Fatalf("QueryRow failed: %v\n", err)
 	}
+	log.Println(greeting)
+
+	query := `INSERT INTO foo (id, name) VALUES (@id, @name)`
+	args := pgx.NamedArgs{
+		"id":   1,
+		"name": "Justin",
+	}
+	ct, err := dbpool.Exec(context.Background(), query, args)
+	if err != nil {
+		log.Fatalf("QueryRow failed: %v\n", err)
+	}
+	log.Println(ct.String())
+
+	rows, err := dbpool.Query(context.Background(), "SELECT * FROM foo")
+	if err != nil {
+		log.Fatalf("QueryRow failed: %v\n", err)
+	}
+	for rows.Next() {
+		values, err := rows.Values()
+		if err != nil {
+			log.Fatalf("Error reading row values: %v\n", err)
+		}
+		log.Println(values)
+	}
+
 	log.Println(greeting)
 }
