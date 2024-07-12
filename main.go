@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"log"
 	"log/slog"
@@ -18,7 +19,15 @@ func main() {
 		slog.Info("No .env file found")
 	}
 
-	persistence.Test()
+	ctx := context.TODO()
+	pgPool, err := persistence.New(ctx)
+	if err != nil {
+		log.Fatal(err)
+	}
+	err = pgPool.Ping(ctx)
+	if err != nil {
+		log.Fatalf("Error pinging database: %v", err)
+	}
 
 	verboseLoggingFlag := flag.Bool("v", false, "enables verbose logging output")
 	flag.Parse()
