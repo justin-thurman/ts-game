@@ -24,6 +24,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	defer pgPool.Close()
 	err = pgPool.Ping(ctx)
 	if err != nil {
 		log.Fatalf("Error pinging database: %v", err)

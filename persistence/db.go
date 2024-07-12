@@ -11,7 +11,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-func Test() {
+func test() {
 	dbUrl := os.Getenv("DATABASE_URL")
 	if dbUrl == "" {
 		log.Fatal("DATABASE_URL env var not set")
