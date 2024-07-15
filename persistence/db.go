@@ -8,6 +8,7 @@ import (
 	"sync"
 
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -90,4 +91,16 @@ func (pg *postgres) Ping(ctx context.Context) error {
 
 func (pg *postgres) Close() {
 	pg.db.Close()
+}
+
+func (pg *postgres) Exec(ctx context.Context, sqlStr string, args ...interface{}) (pgconn.CommandTag, error) {
+	return pg.db.Exec(ctx, sqlStr, args...)
+}
+
+func (pg *postgres) Query(ctx context.Context, sqlString string, args ...interface{}) (pgx.Rows, error) {
+	return pg.db.Query(ctx, sqlString, args...)
+}
+
+func (pg *postgres) QueryRow(ctx context.Context, sqlString string, args ...interface{}) pgx.Row {
+	return pg.db.QueryRow(ctx, sqlString, args...)
 }
