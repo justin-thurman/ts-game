@@ -1,6 +1,8 @@
 -- migrate:up
 CREATE TABLE players (
   id SERIAL PRIMARY KEY,
+  account_id INT NOT NULL,
+  FOREIGN KEY (account_id) REFERENCES accounts(id),
   name VARCHAR(100) NOT NULL UNIQUE,
   class INT NOT NULL,
   stats_id INT NOT NULL UNIQUE,
