@@ -9,6 +9,17 @@ import (
 	"context"
 )
 
+const accountExists = `-- name: AccountExists :one
+SELECT EXISTS(SELECT 1 FROM accounts WHERE username = $1)
+`
+
+func (q *Queries) AccountExists(ctx context.Context, username string) (bool, error) {
+	row := q.db.QueryRow(ctx, accountExists, username)
+	var exists bool
+	err := row.Scan(&exists)
+	return exists, err
+}
+
 const createAccount = `-- name: CreateAccount :one
 INSERT INTO accounts (username, password_hash, salt) 
 VALUES ($1, $2, $3)

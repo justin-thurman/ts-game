@@ -43,7 +43,7 @@ func main() {
 	if *verboseLoggingFlag {
 		programLevel.Set(slog.LevelDebug)
 	}
-	server := engine.New()
+	server := engine.New(queryEngine)
 	slog.Info("Listening for TCP connections...")
 	listener, err := net.Listen("tcp", ":8080")
 	if err != nil {

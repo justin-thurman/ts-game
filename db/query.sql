@@ -6,3 +6,6 @@ WHERE username = $1 LIMIT 1;
 INSERT INTO accounts (username, password_hash, salt) 
 VALUES ($1, $2, $3)
 RETURNING id;
+
+-- name: AccountExists :one
+SELECT EXISTS(SELECT 1 FROM accounts WHERE username = $1);

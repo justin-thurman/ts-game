@@ -2,13 +2,17 @@ package engine
 
 import (
 	"bufio"
+	"context"
 	"fmt"
 	"io"
+	"log/slog"
 	log "log/slog"
 	"slices"
 	"strings"
 	"sync"
 	"time"
+	"ts-game/auth"
+	"ts-game/db/queries"
 	"ts-game/help"
 	"ts-game/items"
 	playerModule "ts-game/player"
@@ -16,17 +20,72 @@ import (
 )
 
 type server struct {
-	players    []*playerModule.Player
-	playerLock sync.RWMutex
+	queryEngine *queries.Queries
+	players     []*playerModule.Player
+	playerLock  sync.RWMutex
 }
 
-func New() *server {
-	return &server{}
+func New(queryEngine *queries.Queries) *server {
+	return &server{queryEngine: queryEngine}
 }
 
 func (s *server) Connect(r io.Reader, w io.Writer, exitCallback func()) {
-	fmt.Fprintln(w, "Welcome! What is your name?")
+	ctx := context.Background()
 	scanner := bufio.NewScanner(r)
+	fmt.Fprintln(w, "Welcome! Enter your account name to login to an existing account or create a new one.")
+	for scanner.Scan() {
+		accountName := scanner.Text()
+		accountExists, err := s.queryEngine.AccountExists(ctx, accountName)
+		if err != nil {
+			fmt.Fprintln(w, "Error searching for account. Please try again.")
+			continue
+		}
+		if accountExists {
+			// TODO: handle login
+		} else {
+			fmt.Fprintln(w, "Creating account with name %s. Continue? 'yes' or 'no'", accountName)
+			scanner.Scan()
+			answer := scanner.Text()
+			if answer == "yes" {
+				password := ""
+				password2 := "not matching"
+				for password != password2 {
+					fmt.Fprintln(w, "Please enter your password.")
+					scanner.Scan()
+					password = scanner.Text()
+					fmt.Fprintln(w, "Please enter your password again.")
+					scanner.Scan()
+					password2 = scanner.Text()
+					if password != password2 {
+						fmt.Fprintln(w, "Passwords do not match")
+					}
+				}
+				salt, err := auth.GenerateSalt()
+				if err != nil {
+					fmt.Fprintln(w, "Error creating account. Please try again.")
+					slog.Error("Error salting password during account creation", "err", err)
+					continue
+				}
+				hashedPassword, err := auth.HashPassword(password, salt)
+				if err != nil {
+					fmt.Fprintln(w, "Error creating account. Please try again.")
+					slog.Error("Error hashing password during account creation", "err", err)
+					continue
+				}
+				accountId, err := s.queryEngine.CreateAccount(ctx, accountName, hashedPassword, salt)
+				if err != nil {
+					fmt.Fprintln(w, "Error creating account. Please try again.")
+					slog.Error("Error saving account during account creation", "err", err)
+					continue
+				}
+				slog.Debug("Account created", "accountId", accountId)
+				fmt.Fprintln(w, "Account created successfully!")
+			} else {
+				fmt.Fprintln(w, "Welcome! Enter your account name to login to an existing account or create a new one.")
+				continue
+			}
+		}
+	}
 	var player *playerModule.Player
 	for scanner.Scan() {
 		name := scanner.Text()
