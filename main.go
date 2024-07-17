@@ -31,9 +31,6 @@ func main() {
 		log.Fatalf("Error pinging database: %v", err)
 	}
 	queryEngine := queries.New(pgPool)
-	// FIX: Just testing that we can query
-	accountId, err := queryEngine.GetAccountID(ctx, "fakeUsername")
-	slog.Error("Testing account ID fetch", "accountId", accountId, "err", err.Error())
 
 	verboseLoggingFlag := flag.Bool("v", false, "enables verbose logging output")
 	flag.Parse()
