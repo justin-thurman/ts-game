@@ -4,12 +4,13 @@ import (
 	"context"
 	"crypto/rand"
 	"encoding/base64"
+	"errors"
+	"ts-game/db/queries"
 
 	"golang.org/x/crypto/bcrypt"
 )
 
-// GenerateSalt creates a random salt.
-func GenerateSalt() (string, error) {
+func generateSalt() (string, error) {
 	salt := make([]byte, 16)
 	_, err := rand.Read(salt)
 	if err != nil {
@@ -18,8 +19,7 @@ func GenerateSalt() (string, error) {
 	return base64.StdEncoding.EncodeToString(salt), nil
 }
 
-// HashPassword hashes a password using the provided salt.
-func HashPassword(password, salt string) (string, error) {
+func hashPassword(password, salt string) (string, error) {
 	saltedPassword := password + salt
 	hash, err := bcrypt.GenerateFromPassword([]byte(saltedPassword), bcrypt.DefaultCost)
 	if err != nil {
@@ -28,14 +28,9 @@ func HashPassword(password, salt string) (string, error) {
 	return string(hash), nil
 }
 
-// ComparePassword compares a plaintext password against the hashed and salted password.
-func ComparePassword(plaintextPassword, hashedPassword, salt string) (bool, error) {
+func comparePassword(plaintextPassword, hashedPassword, salt string) error {
 	plaintextPlusSalt := plaintextPassword + salt
-	err := bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(plaintextPlusSalt))
-	if err != nil {
-		return false, err
-	}
-	return true, nil
+	return bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(plaintextPlusSalt))
 }
 
 type accountCreator interface {
@@ -44,11 +39,11 @@ type accountCreator interface {
 
 // CreateAccount creates a new player account.
 func CreateAccount(ctx context.Context, creator accountCreator, username, password string) (int32, error) {
-	salt, err := GenerateSalt()
+	salt, err := generateSalt()
 	if err != nil {
 		return -1, err
 	}
-	hashedPassword, err := HashPassword(password, salt)
+	hashedPassword, err := hashPassword(password, salt)
 	if err != nil {
 		return -1, err
 	}
@@ -57,4 +52,34 @@ func CreateAccount(ctx context.Context, creator accountCreator, username, passwo
 		return -1, err
 	}
 	return accountId, nil
+}
+
+type accountExistsChecker interface {
+	AccountExists(ctx context.Context, username string) (bool, error)
+}
+
+// AccountExists checks whether an account with the given username exists.
+func AccountExists(ctx context.Context, accountExistsChecker accountExistsChecker, username string) (bool, error) {
+	exists, err := accountExistsChecker.AccountExists(ctx, username)
+	if err != nil {
+		return false, err
+	}
+	return exists, nil
+}
+
+type accountGetter interface {
+	GetAccount(ctx context.Context, username string) (queries.GetAccountRow, error)
+}
+
+// Login logs a user in to an existing account if the correct password is provided.
+func Login(ctx context.Context, accountGetter accountGetter, username, password string) (int32, error) {
+	account, err := accountGetter.GetAccount(ctx, username)
+	if err != nil {
+		return -1, err
+	}
+	err = comparePassword(password, account.PasswordHash, account.Salt)
+	if err != nil {
+		return -1, errors.New("incorrect password")
+	}
+	return account.ID, nil
 }

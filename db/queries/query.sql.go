@@ -33,6 +33,24 @@ func (q *Queries) CreateAccount(ctx context.Context, username string, passwordHa
 	return id, err
 }
 
+const getAccount = `-- name: GetAccount :one
+SELECT id, password_hash, salt FROM accounts
+WHERE username = $1 LIMIT 1
+`
+
+type GetAccountRow struct {
+	ID           int32
+	PasswordHash string
+	Salt         string
+}
+
+func (q *Queries) GetAccount(ctx context.Context, username string) (GetAccountRow, error) {
+	row := q.db.QueryRow(ctx, getAccount, username)
+	var i GetAccountRow
+	err := row.Scan(&i.ID, &i.PasswordHash, &i.Salt)
+	return i, err
+}
+
 const getAccountID = `-- name: GetAccountID :one
 SELECT id FROM accounts
 WHERE username = $1 LIMIT 1

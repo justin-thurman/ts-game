@@ -35,15 +35,30 @@ func (s *server) Connect(r io.Reader, w io.Writer, exitCallback func()) {
 	fmt.Fprintln(w, "Welcome! Enter your account name to login to an existing account or create a new one.")
 	for scanner.Scan() {
 		accountName := scanner.Text()
-		accountExists, err := s.queryEngine.AccountExists(ctx, accountName)
+		accountExists, err := auth.AccountExists(ctx, s.queryEngine, accountName)
 		if err != nil {
 			fmt.Fprintln(w, "Error searching for account. Please try again.")
 			continue
 		}
 		if accountExists {
-			// TODO: handle login
+			fmt.Fprintf(w, "Logging into account %s. Enter password.\n", accountName)
+			scanner.Scan()
+			password := scanner.Text()
+			accountId, err := auth.Login(ctx, s.queryEngine, accountName, password)
+			if err != nil {
+				if err.Error() == "incorrect password" {
+					fmt.Fprintln(w, "Incorrect password.")
+				} else {
+					fmt.Fprintln(w, "Error logging in. Please try again.")
+					slog.Error("Error during login", "err", err, "accountName", accountName)
+				}
+				fmt.Fprintln(w, "Welcome! Enter your account name to login to an existing account or create a new one.")
+				continue
+			}
+			slog.Debug("Login to account", "accountId", accountId)
+			fmt.Fprintf(w, "Welcome back, %s!", accountName)
 		} else {
-			fmt.Fprintln(w, "Creating account with name %s. Continue? 'yes' or 'no'", accountName)
+			fmt.Fprintf(w, "Creating account with name %s. Continue? 'yes' or 'no'\n", accountName)
 			scanner.Scan()
 			answer := scanner.Text()
 			if answer == "yes" {
@@ -60,23 +75,10 @@ func (s *server) Connect(r io.Reader, w io.Writer, exitCallback func()) {
 						fmt.Fprintln(w, "Passwords do not match")
 					}
 				}
-				salt, err := auth.GenerateSalt()
+				accountId, err := auth.CreateAccount(ctx, s.queryEngine, accountName, password)
 				if err != nil {
 					fmt.Fprintln(w, "Error creating account. Please try again.")
-					slog.Error("Error salting password during account creation", "err", err)
-					continue
-				}
-				hashedPassword, err := auth.HashPassword(password, salt)
-				if err != nil {
-					fmt.Fprintln(w, "Error creating account. Please try again.")
-					slog.Error("Error hashing password during account creation", "err", err)
-					continue
-				}
-				accountId, err := s.queryEngine.CreateAccount(ctx, accountName, hashedPassword, salt)
-				if err != nil {
-					fmt.Fprintln(w, "Error creating account. Please try again.")
-					slog.Error("Error saving account during account creation", "err", err)
-					continue
+					slog.Error("Error during account creation", "err", err)
 				}
 				slog.Debug("Account created", "accountId", accountId)
 				fmt.Fprintln(w, "Account created successfully!")
