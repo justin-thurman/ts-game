@@ -5,7 +5,6 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"log/slog"
 	log "log/slog"
 	"slices"
 	"strings"
@@ -33,64 +32,7 @@ func (s *server) Connect(r io.Reader, w io.Writer, exitCallback func()) {
 	ctx := context.Background()
 	scanner := bufio.NewScanner(r)
 	fmt.Fprintln(w, "Welcome! Enter your account name to login to an existing account or create a new one.")
-loginOrSignupLoop:
-	for scanner.Scan() {
-		accountName := scanner.Text()
-		accountExists, err := auth.AccountExists(ctx, s.queryEngine, accountName)
-		if err != nil {
-			fmt.Fprintln(w, "Error searching for account. Please try again.")
-			continue
-		}
-		if accountExists {
-			fmt.Fprintf(w, "Logging into account %s. Enter password.\n", accountName)
-			scanner.Scan()
-			password := scanner.Text()
-			accountId, err := auth.Login(ctx, s.queryEngine, accountName, password)
-			if err != nil {
-				if err.Error() == "incorrect password" {
-					fmt.Fprintln(w, "Incorrect password.")
-				} else {
-					fmt.Fprintln(w, "Error logging in. Please try again.")
-					slog.Error("Error during login", "err", err, "accountName", accountName)
-				}
-				fmt.Fprintln(w, "Welcome! Enter your account name to login to an existing account or create a new one.")
-				continue
-			}
-			slog.Debug("Login to account", "accountId", accountId)
-			fmt.Fprintf(w, "Welcome back, %s!", accountName)
-			break loginOrSignupLoop
-		} else {
-			fmt.Fprintf(w, "Creating account with name %s. Continue? 'yes' or 'no'\n", accountName)
-			scanner.Scan()
-			answer := scanner.Text()
-			answer = strings.ToLower(answer)
-			if answer != "yes" {
-				fmt.Fprintln(w, "Welcome! Enter your account name to login to an existing account or create a new one.")
-				continue
-			}
-			password := ""
-			password2 := "not matching"
-			for password != password2 {
-				fmt.Fprintln(w, "Please enter your password.")
-				scanner.Scan()
-				password = scanner.Text()
-				fmt.Fprintln(w, "Please enter your password again.")
-				scanner.Scan()
-				password2 = scanner.Text()
-				if password != password2 {
-					fmt.Fprintln(w, "Passwords do not match")
-				}
-			}
-			accountId, err := auth.CreateAccount(ctx, s.queryEngine, accountName, password)
-			if err != nil {
-				fmt.Fprintln(w, "Error creating account. Please try again.")
-				slog.Error("Error during account creation", "err", err)
-			}
-			slog.Debug("Account created", "accountId", accountId)
-			fmt.Fprintln(w, "Account created successfully!")
-			break loginOrSignupLoop
-		}
-	}
+	accountId := auth.LoginOrSignUp(ctx, r, w, s.queryEngine)
 	var player *playerModule.Player
 	for scanner.Scan() {
 		name := scanner.Text()
