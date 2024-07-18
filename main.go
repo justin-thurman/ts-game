@@ -9,19 +9,15 @@ import (
 	"os"
 	"ts-game/db/queries"
 	"ts-game/engine"
-	"ts-game/persistence"
 
 	"github.com/joho/godotenv"
 )
 
 func main() {
-	err := godotenv.Load()
-	if err != nil {
-		slog.Info("No .env file found")
-	}
+	godotenv.Load()
 
 	ctx := context.TODO()
-	pgPool, err := persistence.New(ctx)
+	pgPool, err := queries.NewPG(ctx)
 	if err != nil {
 		log.Fatal(err)
 	}

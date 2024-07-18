@@ -1,4 +1,4 @@
-package persistence
+package queries
 
 import (
 	"context"
@@ -21,7 +21,7 @@ var (
 	pgOnce     sync.Once
 )
 
-func New(ctx context.Context) (*postgres, error) {
+func NewPG(ctx context.Context) (*postgres, error) {
 	dbUrl := os.Getenv("DATABASE_URL")
 	if dbUrl == "" {
 		log.Fatal("DATABASE_URL env var not set")
